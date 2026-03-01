@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from database import init_db, get_db
+from advanced_features import BudgetGuardian, PromptOptimizer, ABTester, ROIForecaster, AnomalyDetector
+from power_features import SmartPromptLibrary, CostOptimizer, WorkflowHealthScore, TeamROIDashboard
 from mistral_wrapper import MistralWrapper
 from roi_engine import ROIEngine
 
@@ -157,8 +159,17 @@ def get_engine():
     init_db()
     return ROIEngine()
 
-engine  = get_engine()
-mistral = MistralWrapper()
+engine   = get_engine()
+mistral  = MistralWrapper()
+budget   = BudgetGuardian()
+optimizer = PromptOptimizer()
+abtester = ABTester()
+forecaster = ROIForecaster()
+anomalies  = AnomalyDetector()
+prompt_lib = SmartPromptLibrary()
+cost_opt   = CostOptimizer()
+health     = WorkflowHealthScore()
+team_roi   = TeamROIDashboard()
 
 # ─── DARK PLOTLY TABLE ────────────────────────────────────────────────────────
 def dark_table(df: pd.DataFrame, height=280, col_widths=None, col_colors=None):
@@ -250,9 +261,11 @@ with st.sidebar:
                 unsafe_allow_html=True)
 
 # ─── TABS ─────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📊  Dashboard", "🚀  Live Demo",
-    "💰  Record Outcome", "⚠️   Kill-Switch Alerts", "📝  Exec Report"
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
+    "📊  Dashboard", "🚀  Live Demo", "💰  Record Outcome",
+    "⚠️  Kill-Switch", "📝  Exec Report", "💸  Budget Guard",
+    "🔬  A/B Test", "🔮  Forecaster", "📚  Prompt Library",
+    "⚙️  Cost Optimizer", "🏆  Health Score", "👥  Team ROI"
 ])
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -645,3 +658,684 @@ with tab5:
         r2.markdown(kpi("Value Created", f'${snap["total_value_usd"]:.2f}', "", GREEN, GREEN), unsafe_allow_html=True)
         r3.markdown(kpi("ROI",           f'{snap["overall_roi_pct"]:+.1f}%',"", roi_c3, roi_c3), unsafe_allow_html=True)
         r4.markdown(kpi("Total Calls",   f'{snap["total_calls"]:,}', "",         BLUE, BLUE),  unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 6 — BUDGET GUARDIAN
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab6:
+    st.markdown('<div class="panel-title">// Budget Guardian — Dynamic Per-Workflow Spend Limits</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-bar">Set a real budget for each AI workflow. The system tracks burn rate in real time, alerts at your chosen threshold, and shows how many days until you run out — all from actual API call data.</div>', unsafe_allow_html=True)
+
+    col_b1, col_b2 = st.columns([1, 1.4])
+
+    with col_b1:
+        st.markdown('<div class="panel-title">// Set Budget</div>', unsafe_allow_html=True)
+
+        db_wfs = get_db().execute("SELECT workflow_id, name FROM workflows").fetchall()
+        wf_options = {f"{w['name']} ({w['workflow_id']})": w['workflow_id'] for w in db_wfs}
+
+        if wf_options:
+            sel_wf_budget = st.selectbox("Workflow", list(wf_options.keys()), key="bg_wf")
+            budget_amt    = st.number_input("Budget Amount ($)", min_value=0.001, value=1.0, step=0.1, format="%.3f")
+            period_days   = st.slider("Period (days)", min_value=1, max_value=90, value=30)
+            alert_pct     = st.slider("Alert when spend reaches (%)", min_value=50, max_value=95, value=80)
+
+            if st.button("💸  Set Budget", use_container_width=True):
+                wf_id_b = wf_options[sel_wf_budget]
+                result  = budget.set_budget(wf_id_b, budget_amt, period_days, float(alert_pct))
+                st.success(f"✓ Budget set: ${budget_amt:.3f} over {period_days} days for {sel_wf_budget}")
+        else:
+            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:16px;border:1px dashed {BORDER}">Register workflows in the sidebar first.</div>', unsafe_allow_html=True)
+
+    with col_b2:
+        st.markdown('<div class="panel-title">// Live Budget Status</div>', unsafe_allow_html=True)
+        all_budgets = budget.get_all_budgets()
+
+        if not all_budgets:
+            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No budgets set yet.<br>Set one on the left to start tracking.</div>', unsafe_allow_html=True)
+        else:
+            SEV_COLOR = {"healthy": GREEN, "warning": WARN, "at_limit": RED, "over_budget": RED}
+            SEV_ICON  = {"healthy": "✅", "warning": "⚠️", "at_limit": "🔴", "over_budget": "💀"}
+
+            for b_item in all_budgets:
+                sev   = b_item["severity"]
+                color = SEV_COLOR.get(sev, MUTED2)
+                icon  = SEV_ICON.get(sev, "⚪")
+                bar_w = min(b_item["pct_used"], 100)
+                bar_color = GREEN if bar_w < 80 else WARN if bar_w < 100 else RED
+
+                st.markdown(f"""
+                <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {color};padding:14px 16px;margin-bottom:12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:{TEXT};">{icon} {b_item['workflow_name']}</div>
+                    <div style="font-family:Space Mono,monospace;font-size:10px;color:{color};font-weight:700;">{b_item['pct_used']:.1f}% used</div>
+                  </div>
+                  <div style="background:{BORDER};height:6px;margin-bottom:8px;">
+                    <div style="width:{bar_w}%;height:100%;background:{bar_color};"></div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+                    <div style="font-family:Space Mono,monospace;">
+                      <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Budget</div>
+                      <div style="font-size:13px;color:{TEXT};font-weight:700;">${b_item['budget_usd']:.3f}</div>
+                    </div>
+                    <div style="font-family:Space Mono,monospace;">
+                      <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Spent</div>
+                      <div style="font-size:13px;color:{WARN};font-weight:700;">${b_item['spent_usd']:.6f}</div>
+                    </div>
+                    <div style="font-family:Space Mono,monospace;">
+                      <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Remaining</div>
+                      <div style="font-size:13px;color:{GREEN};font-weight:700;">${b_item['remaining_usd']:.6f}</div>
+                    </div>
+                    <div style="font-family:Space Mono,monospace;">
+                      <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Days Left</div>
+                      <div style="font-size:13px;color:{BLUE};font-weight:700;">{b_item['days_until_empty']:.0f}d</div>
+                    </div>
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 7 — A/B MODEL TESTER
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab7:
+    st.markdown('<div class="panel-title">// A/B Model Tester — Compare Any 2 Mistral Models Live</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-bar">Run the exact same prompt through 2 models simultaneously. Compare real cost, latency, and token usage side by side. Results saved to history. Use this to find the cheapest model that meets your quality bar.</div>', unsafe_allow_html=True)
+
+    col_ab1, col_ab2 = st.columns([1, 1])
+
+    MODELS_AB = ["mistral-large-latest", "mistral-small-latest", "open-mistral-7b",
+                 "open-mixtral-8x7b", "codestral-latest"]
+
+    with col_ab1:
+        st.markdown('<div class="panel-title">// Test Configuration</div>', unsafe_allow_html=True)
+        model_a_sel = st.selectbox("Model A", MODELS_AB, index=0, key="ab_ma")
+        model_b_sel = st.selectbox("Model B", MODELS_AB, index=1, key="ab_mb")
+        ab_sys      = st.text_input("System Prompt", placeholder="You are a helpful assistant...", key="ab_sys")
+        ab_prompt   = st.text_area("Prompt to Test (same sent to both models)",
+            value="Explain the ROI of implementing AI in customer support in 3 bullet points. Be specific and cite example numbers.",
+            height=120, key="ab_prompt")
+
+        run_ab = st.button("⚡  Run A/B Test (Parallel)", use_container_width=True)
+
+    with col_ab2:
+        st.markdown('<div class="panel-title">// Results</div>', unsafe_allow_html=True)
+
+        if run_ab:
+            if model_a_sel == model_b_sel:
+                st.error("Please select two different models.")
+            elif not mistral.api_key:
+                st.warning("Add your MISTRAL_API_KEY in the sidebar.")
+            else:
+                with st.spinner(f"Calling {model_a_sel} and {model_b_sel} in parallel..."):
+                    try:
+                        result = asyncio.run(abtester.run_ab_test(
+                            prompt=ab_prompt, model_a=model_a_sel, model_b=model_b_sel,
+                            system_prompt=ab_sys, api_key=mistral.api_key
+                        ))
+                        st.session_state["ab_result"] = result
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+        ab_r = st.session_state.get("ab_result")
+        if ab_r:
+            winner_cost = ab_r["cheaper_model"]
+            winner_lat  = ab_r["latency_winner"]
+
+            c1, c2 = st.columns(2)
+            for col, key, label in [(c1, "model_a", "Model A"), (c2, "model_b", "Model B")]:
+                m    = ab_r[key]
+                is_cheap = m["model"] == winner_cost
+                border_c = GREEN if is_cheap else BORDER
+                badge    = f'<span style="background:{GREEN};color:{BG};font-size:9px;padding:2px 6px;font-family:Space Mono,monospace;font-weight:700;margin-left:8px;">CHEAPER</span>' if is_cheap else ""
+                col.markdown(f"""
+                <div style="background:{SURF2};border:1px solid {border_c};padding:16px;">
+                  <div style="font-family:Space Mono,monospace;font-size:10px;font-weight:700;color:{TEXT};margin-bottom:12px;">{m['model']}{badge}</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:Space Mono,monospace;">
+                    <div><div style="font-size:8px;color:{MUTED};text-transform:uppercase;">Cost</div>
+                         <div style="font-size:18px;color:{WARN};font-weight:700;">${m['cost_usd']:.6f}</div></div>
+                    <div><div style="font-size:8px;color:{MUTED};text-transform:uppercase;">Latency</div>
+                         <div style="font-size:18px;color:{BLUE};font-weight:700;">{m['latency_ms']}ms</div></div>
+                    <div><div style="font-size:8px;color:{MUTED};text-transform:uppercase;">In Tokens</div>
+                         <div style="font-size:14px;color:{TEXT};">{m['input_tokens']}</div></div>
+                    <div><div style="font-size:8px;color:{MUTED};text-transform:uppercase;">Out Tokens</div>
+                         <div style="font-size:14px;color:{TEXT};">{m['output_tokens']}</div></div>
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);
+                        border-left:3px solid {GREEN};padding:14px;margin-top:12px;
+                        font-family:Space Mono,monospace;font-size:11px;color:{TEXT};">
+              <div style="color:{GREEN};font-weight:700;margin-bottom:4px;">SAVINGS: {ab_r['savings_pct']:.1f}% cheaper</div>
+              {ab_r['recommendation']}
+            </div>""", unsafe_allow_html=True)
+
+            with st.expander("View Responses Side by Side"):
+                r1, r2 = st.columns(2)
+                r1.markdown(f'<div class="rbox" style="font-size:11px;">{ab_r["model_a"]["content"]}</div>', unsafe_allow_html=True)
+                r2.markdown(f'<div class="rbox" style="font-size:11px;">{ab_r["model_b"]["content"]}</div>', unsafe_allow_html=True)
+
+    # AB History
+    st.markdown(f'<hr style="border:none;border-top:1px solid {BORDER};margin:20px 0">', unsafe_allow_html=True)
+    st.markdown('<div class="panel-title">// A/B Test History</div>', unsafe_allow_html=True)
+    history = abtester.get_ab_history(10)
+    if history:
+        df_h = pd.DataFrame(history)
+        df_h["created_at"] = pd.to_datetime(df_h["created_at"]).dt.strftime("%m/%d %H:%M")
+        df_h["savings"]    = df_h["savings_pct"].apply(lambda x: f"{x:.1f}%")
+        df_h["cost_a"]     = df_h["cost_a"].apply(lambda x: f"${x:.6f}")
+        df_h["cost_b"]     = df_h["cost_b"].apply(lambda x: f"${x:.6f}")
+        dark_table(
+            df_h[["model_a","model_b","cost_a","cost_b","winner","savings","created_at"]].rename(
+                columns={"model_a":"Model A","model_b":"Model B","cost_a":"Cost A",
+                         "cost_b":"Cost B","winner":"Winner","savings":"Savings","created_at":"Time"}),
+            height=220, col_widths=[130,130,90,90,130,70,90],
+            col_colors=[MUTED2, MUTED2, WARN, WARN, GREEN, GREEN, MUTED2]
+        )
+    else:
+        st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:16px;text-align:center;border:1px dashed {BORDER}">No tests yet. Run your first A/B test above.</div>', unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 8 — ROI FORECASTER + ANOMALY DETECTOR
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab8:
+    st.markdown('<div class="panel-title">// ROI Forecaster & Anomaly Detector</div>', unsafe_allow_html=True)
+
+    sub1, sub2 = st.tabs(["🔮  ROI Forecast", "🚨  Anomaly Detector"])
+
+    with sub1:
+        st.markdown(f'<div class="info-bar">Predicts future AI costs and value using linear regression on your real historical data. No hardcoded numbers — all projections come from actual DB records. Confidence score reflects data quality.</div>', unsafe_allow_html=True)
+
+        fc1, fc2 = st.columns([1, 2])
+        with fc1:
+            days_ahead = st.slider("Forecast Horizon (days)", min_value=7, max_value=90, value=30, step=7)
+            run_fc = st.button("🔮  Generate Forecast", use_container_width=True)
+
+        with fc2:
+            if run_fc or "forecast_data" in st.session_state:
+                if run_fc:
+                    fc_data = forecaster.forecast(days_ahead)
+                    st.session_state["forecast_data"] = fc_data
+                fc_data = st.session_state.get("forecast_data", {})
+
+                if "error" in fc_data:
+                    st.warning(f"⚠️ {fc_data['error']}")
+                else:
+                    c1, c2, c3, c4 = st.columns(4)
+                    roi_fc = GREEN if fc_data["projected_roi_pct"] >= 0 else RED
+                    conf_c = GREEN if fc_data["confidence_score"] > 70 else WARN if fc_data["confidence_score"] > 40 else RED
+
+                    c1.markdown(kpi("Projected Cost",  f'${fc_data["projected_total_cost"]:.4f}',  fc_data["cost_trend"],  WARN, WARN),  unsafe_allow_html=True)
+                    c2.markdown(kpi("Projected Value", f'${fc_data["projected_total_value"]:.2f}',  fc_data["value_trend"], GREEN, GREEN), unsafe_allow_html=True)
+                    c3.markdown(kpi("Projected ROI",   f'{fc_data["projected_roi_pct"]:+.1f}%',    f'{days_ahead} days',   roi_fc, roi_fc), unsafe_allow_html=True)
+                    c4.markdown(kpi("Confidence",      f'{fc_data["confidence_score"]:.0f}%',       f'{fc_data["data_points_used"]} data pts', conf_c, conf_c), unsafe_allow_html=True)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    # Chart: historical + forecast
+                    fig_fc = go.Figure()
+                    fig_fc.add_trace(go.Scatter(
+                        x=fc_data["historical_dates"], y=fc_data["historical_values"],
+                        name="Actual Value", mode="lines+markers",
+                        line=dict(color=GREEN, width=2),
+                        marker=dict(size=5)
+                    ))
+                    fig_fc.add_trace(go.Scatter(
+                        x=fc_data["forecast_dates"], y=fc_data["forecast_values"],
+                        name="Forecast Value", mode="lines",
+                        line=dict(color=GREEN, width=2, dash="dot")
+                    ))
+                    fig_fc.add_trace(go.Bar(
+                        x=fc_data["historical_dates"], y=fc_data["historical_costs"],
+                        name="Actual Cost", marker_color=WARN, opacity=0.5, yaxis="y2"
+                    ))
+                    fig_fc.add_trace(go.Bar(
+                        x=fc_data["forecast_dates"], y=fc_data["forecast_costs"],
+                        name="Forecast Cost", marker_color=WARN, opacity=0.25, yaxis="y2"
+                    ))
+                    fig_fc.add_vline(
+                        x=datetime.utcnow().strftime("%Y-%m-%d"),
+                        line_dash="dash", line_color=MUTED,
+                        annotation_text="TODAY", annotation_font_color=MUTED
+                    )
+                    fig_fc.update_layout(
+                        paper_bgcolor=SURF, plot_bgcolor=SURF,
+                        font=dict(family="Space Mono, monospace", color=MUTED2, size=10),
+                        margin=dict(l=44, r=44, t=36, b=44),
+                        height=340,
+                        xaxis=dict(gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
+                        yaxis=dict(title="Value ($)", gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
+                        yaxis2=dict(title="Cost ($)", overlaying="y", side="right",
+                                    tickfont=dict(color=MUTED2, size=9)),
+                        legend=dict(bgcolor=SURF2, bordercolor=BORDER, font=dict(color=MUTED2, size=9)),
+                        title=dict(text=f"{days_ahead}-Day ROI Forecast (Historical + Projected)",
+                                   font=dict(size=10, color=MUTED))
+                    )
+                    st.plotly_chart(fig_fc, use_container_width=True, config={"displayModeBar": False})
+
+    with sub2:
+        st.markdown(f'<div class="info-bar">Learns the normal baseline (cost, latency, quality) for each workflow from real data. Automatically flags calls that are statistically abnormal. Tune the sensitivity with the sigma slider — lower = more sensitive.</div>', unsafe_allow_html=True)
+
+        an1, an2 = st.columns([1, 2])
+        with an1:
+            sigma = st.slider("Sensitivity (σ threshold)", min_value=1.0, max_value=4.0,
+                              value=2.5, step=0.1,
+                              help="Lower = more sensitive. 2.0 catches more anomalies. 3.0 only flags extreme cases.")
+            refresh_an = st.button("🚨  Detect Anomalies", use_container_width=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">// Baselines (Last 30 Days)</div>', unsafe_allow_html=True)
+            bases = anomalies.get_baselines()
+            if bases:
+                for b in bases:
+                    st.markdown(f"""
+                    <div style="background:{SURF2};border:1px solid {BORDER};padding:10px 12px;margin-bottom:8px;font-family:Space Mono,monospace;">
+                      <div style="font-size:11px;font-weight:700;color:{TEXT};margin-bottom:6px;">{b['workflow_name']}</div>
+                      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:9px;">
+                        <div><div style="color:{MUTED};">AVG COST</div><div style="color:{WARN};">${b['avg_cost']:.6f}</div></div>
+                        <div><div style="color:{MUTED};">AVG LAT</div><div style="color:{BLUE};">{b['avg_latency']:.0f}ms</div></div>
+                        <div><div style="color:{MUTED};">AVG QUAL</div><div style="color:{GREEN};">{b['avg_quality']:.2f}</div></div>
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:10px;">Need 5+ calls per workflow to build a baseline.</div>', unsafe_allow_html=True)
+
+        with an2:
+            st.markdown('<div class="panel-title">// Detected Anomalies (Last 72 Hours)</div>', unsafe_allow_html=True)
+            if refresh_an or "anomaly_list" in st.session_state:
+                if refresh_an:
+                    found = anomalies.detect_anomalies(sigma_threshold=sigma)
+                    st.session_state["anomaly_list"] = found
+                found = st.session_state.get("anomaly_list", [])
+
+                if not found:
+                    st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-left:3px solid {GREEN};padding:14px;font-family:Space Mono,monospace;font-size:12px;color:{GREEN};">✓ No anomalies detected in the last 72 hours at σ={sigma}</div>', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<div style="font-family:Space Mono,monospace;font-size:11px;color:{WARN};margin-bottom:14px;">⚠ {len(found)} anomalous call(s) detected at σ={sigma}</div>', unsafe_allow_html=True)
+                    for a in found[:10]:
+                        sev_c = RED if a["severity"] == "critical" else WARN
+                        flags_html = "".join([
+                            f'<span style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:{RED};font-family:Space Mono,monospace;font-size:9px;padding:2px 8px;margin-right:6px;">{f["label"]}: {f["detail"]}</span>'
+                            for f in a["flags"]
+                        ])
+                        st.markdown(f"""
+                        <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {sev_c};padding:12px 14px;margin-bottom:10px;">
+                          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:{TEXT};">{a['workflow_name']}</div>
+                            <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED2};">{a['model']} · {a['created_at'][:16]}</div>
+                          </div>
+                          <div style="margin-bottom:6px;">{flags_html}</div>
+                          <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};">call_id: {a['call_id'][:16]}...</div>
+                        </div>""", unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="border:1px dashed {BORDER};padding:32px;text-align:center;font-family:Space Mono,monospace;font-size:11px;color:{MUTED};">Click <span style="color:{GREEN}">🚨 Detect Anomalies</span> to scan the last 72 hours.</div>', unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 9 — SMART PROMPT LIBRARY
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab9:
+    st.markdown('<div class="panel-title">// Smart Prompt Library — Save & Rank Prompts by Real Performance</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-bar">Save any prompt to the library. The system automatically tracks which saved prompts generate the highest quality scores and ROI over real usage. Ranking updates every time a prompt is used — no manual scoring needed.</div>', unsafe_allow_html=True)
+
+    pl1, pl2 = st.columns([1, 1.4])
+
+    with pl1:
+        st.markdown('<div class="panel-title">// Save New Prompt</div>', unsafe_allow_html=True)
+        db_wfs2 = get_db().execute("SELECT workflow_id, name FROM workflows").fetchall()
+        wf_map2 = {f"{w['name']}": w['workflow_id'] for w in db_wfs2}
+
+        if wf_map2:
+            pl_wf    = st.selectbox("Workflow", list(wf_map2.keys()), key="pl_wf")
+            pl_title = st.text_input("Prompt Title", placeholder="e.g. Fraud analysis v2 — structured JSON output")
+            pl_tags  = st.text_input("Tags (comma-separated)", placeholder="fraud, json, structured")
+            pl_text  = st.text_area("Prompt Text", height=160, placeholder="Enter the full prompt here...")
+
+            if st.button("📚  Save to Library", use_container_width=True):
+                if pl_title and pl_text:
+                    tags = [t.strip() for t in pl_tags.split(",") if t.strip()]
+                    result = prompt_lib.save_prompt(wf_map2[pl_wf], pl_title, pl_text, tags)
+                    st.success(f"✓ Saved: {pl_title}")
+                    st.session_state["pl_load_text"] = pl_text
+                else:
+                    st.error("Title and Prompt Text are required")
+
+            if "pl_load_text" in st.session_state:
+                st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);padding:10px 12px;font-family:Space Mono,monospace;font-size:10px;color:{GREEN};margin-top:8px;">✓ Prompt saved and ready to track</div>', unsafe_allow_html=True)
+        else:
+            st.info("Register workflows first in the sidebar.")
+
+    with pl2:
+        st.markdown('<div class="panel-title">// Prompt Leaderboard (Ranked by Performance)</div>', unsafe_allow_html=True)
+
+        filter_wf = st.selectbox("Filter by Workflow", ["All"] + list(wf_map2.keys()) if wf_map2 else ["All"], key="pl_filter")
+        wf_filter_id = wf_map2.get(filter_wf) if filter_wf != "All" else None
+
+        prompts = prompt_lib.get_ranked_prompts(wf_filter_id)
+
+        if not prompts:
+            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No prompts saved yet. Add your first prompt on the left.</div>', unsafe_allow_html=True)
+        else:
+            for i, p in enumerate(prompts):
+                rank_c = GREEN if i == 0 else (BLUE if i == 1 else MUTED2)
+                qual_c = GREEN if p["avg_quality"] >= 0.8 else (WARN if p["avg_quality"] >= 0.6 else RED)
+                conf_badge = {"high": f"background:{GREEN};color:{BG}", "medium": f"background:{WARN};color:{BG}", "low": f"background:{MUTED};color:{TEXT}"}.get(p["confidence"], "")
+                tags_html = "".join([f'<span style="background:{SURF2};border:1px solid {BORDER};color:{MUTED2};font-size:9px;padding:1px 6px;margin-right:4px;font-family:Space Mono,monospace;">{t}</span>' for t in p["tags"][:4]])
+
+                st.markdown(f"""
+                <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {rank_c};padding:12px 14px;margin-bottom:10px;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                    <div>
+                      <span style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:{rank_c};">#{i+1}</span>
+                      <span style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:{TEXT};margin-left:8px;">{p['title']}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="font-family:Space Mono,monospace;font-size:10px;color:{qual_c};">Q: {p['avg_quality']:.2f}</span>
+                      <span style="font-size:9px;padding:2px 6px;font-family:Space Mono,monospace;font-weight:700;{conf_badge}">{p['confidence'].upper()}</span>
+                    </div>
+                  </div>
+                  <div style="font-family:Space Mono,monospace;font-size:10px;color:{MUTED2};margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{p['prompt_text'][:120]}...</div>
+                  <div style="display:flex;gap:16px;font-family:Space Mono,monospace;font-size:9px;color:{MUTED};margin-bottom:6px;">
+                    <span>Uses: <span style="color:{TEXT}">{p['uses']}</span></span>
+                    <span>ROI: <span style="color:{'#00e5a0' if p['roi_pct']>=0 else '#ff4d6d'}">{p['roi_pct']:+.0f}%</span></span>
+                    <span>Value: <span style="color:{GREEN}">${p['total_value']:.2f}</span></span>
+                    <span>Avg Cost: <span style="color:{WARN}">${p['avg_cost']:.6f}</span></span>
+                  </div>
+                  {f'<div style="margin-top:4px;">{tags_html}</div>' if tags_html else ''}
+                </div>""", unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 10 — COST OPTIMIZER
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab10:
+    st.markdown('<div class="panel-title">// Cost Optimizer — Find the Cheapest Model That Still Meets Your Quality Bar</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-bar">Analyzes your real quality scores per model per workflow. Recommends the cheapest model above your threshold. Shows projected annual savings based on actual call volumes. No guessing — pure data.</div>', unsafe_allow_html=True)
+
+    co1, co2 = st.columns([1, 1.6])
+
+    with co1:
+        quality_thresh = st.slider("Minimum Quality Threshold", min_value=0.5, max_value=0.95,
+                                   value=0.75, step=0.05,
+                                   help="Only recommend models that achieve at least this quality score")
+        run_opt = st.button("⚙️  Analyze All Workflows", use_container_width=True)
+
+    with co2:
+        if run_opt or "opt_results" in st.session_state:
+            if run_opt:
+                opt_results = cost_opt.get_all_optimizations(quality_thresh)
+                st.session_state["opt_results"] = opt_results
+            opt_results = st.session_state.get("opt_results", [])
+
+            if not opt_results:
+                st.info("No workflows with enough call history yet. Make some tracked calls first.")
+            else:
+                total_savings = sum(r["savings_annual"] for r in opt_results if r["can_optimize"])
+                if total_savings > 0:
+                    st.markdown(f"""
+                    <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.3);padding:14px 18px;margin-bottom:16px;font-family:Space Mono,monospace;">
+                      <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;margin-bottom:4px;">Total Projected Annual Savings</div>
+                      <div style="font-size:28px;font-weight:700;color:{GREEN};">${total_savings:,.2f}</div>
+                      <div style="font-size:10px;color:{MUTED2};">by switching to optimal models across {len([r for r in opt_results if r['can_optimize']])} workflow(s)</div>
+                    </div>""", unsafe_allow_html=True)
+
+                for r in opt_results:
+                    can_opt   = r["can_optimize"]
+                    border_c  = GREEN if can_opt else BORDER
+                    badge     = f'<span style="background:{GREEN};color:{BG};font-family:Space Mono,monospace;font-size:9px;font-weight:700;padding:2px 8px;">SAVE ${r["savings_annual"]:.2f}/yr</span>' if can_opt else f'<span style="background:{SURF2};color:{MUTED};font-family:Space Mono,monospace;font-size:9px;padding:2px 8px;">ALREADY OPTIMAL</span>'
+
+                    with st.expander(f"{'⚡' if can_opt else '✅'} {r['workflow_name']} — {r['monthly_calls']} calls/mo"):
+                        if can_opt:
+                            st.markdown(f"""
+                            <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);padding:12px;margin-bottom:12px;font-family:Space Mono,monospace;">
+                              <div style="font-size:9px;color:{MUTED};text-transform:uppercase;">Recommendation</div>
+                              <div style="font-size:13px;color:{TEXT};margin-top:4px;">
+                                Switch from <span style="color:{WARN}">{r['current_model']}</span> → <span style="color:{GREEN}">{r['recommended_model']}</span>
+                              </div>
+                              <div style="font-size:10px;color:{MUTED2};margin-top:4px;">Save {r['savings_pct']:.0f}% · ${r['savings_annual']:.2f}/year at current volume</div>
+                            </div>""", unsafe_allow_html=True)
+
+                        # Model comparison table
+                        df_models = pd.DataFrame(r["models"])
+                        df_models["is_recommended"] = df_models["model"] == r["recommended_model"]
+                        df_models["is_current"]     = df_models["model"] == r["current_model"]
+                        df_models_display = pd.DataFrame({
+                            "Model":       df_models["model"],
+                            "Avg Quality": df_models["avg_quality"].apply(lambda x: f"{x:.3f}"),
+                            "Avg Cost":    df_models["avg_cost"].apply(lambda x: f"${x:.6f}"),
+                            "Annual Cost": df_models["annual_cost"].apply(lambda x: f"${x:.2f}"),
+                            "Calls":       df_models["calls_measured"].astype(str),
+                            "Source":      df_models["source"],
+                            "Meets Bar":   df_models["meets_threshold"].apply(lambda x: "✓" if x else "✗"),
+                        })
+                        model_colors = []
+                        for _, row in df_models.iterrows():
+                            if row["model"] == r["recommended_model"]:
+                                model_colors.append(GREEN)
+                            elif row["model"] == r["current_model"]:
+                                model_colors.append(WARN)
+                            else:
+                                model_colors.append(TEXT)
+                        dark_table(df_models_display, height=210,
+                                   col_widths=[140,80,90,90,50,80,60],
+                                   col_colors=[TEXT,MUTED2,WARN,RED,MUTED2,MUTED2,GREEN])
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 11 — WORKFLOW HEALTH SCORE
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab11:
+    st.markdown('<div class="panel-title">// Workflow Health Score — One Number That Tells You Everything</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-bar">A single 0–100 score per workflow, like a credit score for AI. Combines ROI (30%), quality (25%), outcome coverage (20%), cost efficiency (15%), and call volume (10%). Grade A–D. Tells you exactly what to fix.</div>', unsafe_allow_html=True)
+
+    all_scores = health.get_all_scores()
+
+    if not all_scores:
+        st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:32px;text-align:center;border:1px dashed {BORDER}">Make some tracked API calls first to generate health scores.</div>', unsafe_allow_html=True)
+    else:
+        # Leaderboard row
+        cols_h = st.columns(min(len(all_scores), 5))
+        for i, (col, s) in enumerate(zip(cols_h, all_scores[:5])):
+            col.markdown(f"""
+            <div style="background:{SURF2};border:1px solid {BORDER};border-top:2px solid {s['grade_color']};padding:16px;text-align:center;">
+              <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px;">{s['workflow_name'][:18]}</div>
+              <div style="font-size:36px;font-weight:800;color:{s['grade_color']};font-family:Syne,sans-serif;">{s['grade']}</div>
+              <div style="font-family:Space Mono,monospace;font-size:18px;font-weight:700;color:{TEXT};margin-top:2px;">{s['total_score']:.0f}</div>
+              <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};margin-top:4px;">/ 100</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Detailed breakdown per workflow
+        for s in all_scores:
+            with st.expander(f"{s['grade']} — {s['workflow_name']} ({s['total_score']:.0f}/100)  ·  {s['top_recommendation']}"):
+                dc1, dc2 = st.columns([1, 1.5])
+
+                with dc1:
+                    st.markdown('<div class="panel-title">// Score Components</div>', unsafe_allow_html=True)
+                    for key, comp in s["components"].items():
+                        bar_c = GREEN if comp["score"] >= 70 else (WARN if comp["score"] >= 40 else RED)
+                        st.markdown(f"""
+                        <div style="margin-bottom:10px;">
+                          <div style="display:flex;justify-content:space-between;font-family:Space Mono,monospace;font-size:10px;margin-bottom:3px;">
+                            <span style="color:{MUTED2};">{comp['label']} <span style="color:{MUTED};font-size:9px;">({comp['weight']})</span></span>
+                            <span style="color:{bar_c};font-weight:700;">{comp['score']:.0f} <span style="color:{MUTED};font-size:9px;">{comp['raw']}</span></span>
+                          </div>
+                          <div style="background:{BORDER};height:5px;">
+                            <div style="width:{comp['score']}%;height:100%;background:{bar_c};"></div>
+                          </div>
+                        </div>""", unsafe_allow_html=True)
+
+                with dc2:
+                    st.markdown('<div class="panel-title">// Key Metrics</div>', unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:Space Mono,monospace;">
+                      <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
+                        <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">ROI</div>
+                        <div style="font-size:18px;color:{'#00e5a0' if s['roi_pct']>=0 else '#ff4d6d'};font-weight:700;">{s['roi_pct']:+.1f}%</div>
+                      </div>
+                      <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
+                        <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">Avg Quality</div>
+                        <div style="font-size:18px;color:{GREEN};font-weight:700;">{s['avg_quality']:.2f}</div>
+                      </div>
+                      <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
+                        <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">Outcome Coverage</div>
+                        <div style="font-size:18px;color:{BLUE};font-weight:700;">{s['outcome_rate']:.0f}%</div>
+                      </div>
+                      <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
+                        <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">Monthly Calls</div>
+                        <div style="font-size:18px;color:{TEXT};font-weight:700;">{s['monthly_calls']}</div>
+                      </div>
+                      <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
+                        <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">Total Cost</div>
+                        <div style="font-size:18px;color:{WARN};font-weight:700;">${s['total_cost']:.4f}</div>
+                      </div>
+                      <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
+                        <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">Total Value</div>
+                        <div style="font-size:18px;color:{GREEN};font-weight:700;">${s['total_value']:.2f}</div>
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <div style="background:rgba(77,159,255,0.07);border-left:3px solid {BLUE};padding:10px 14px;margin-top:12px;font-family:Space Mono,monospace;font-size:11px;color:{TEXT};">
+                      → {s['top_recommendation']}
+                    </div>""", unsafe_allow_html=True)
+
+        # Radar chart comparing all workflows
+        if len(all_scores) >= 2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">// Radar Comparison — All Workflows</div>', unsafe_allow_html=True)
+            
+            categories = ["ROI","Quality","Coverage","Cost Eff","Volume"]
+            fig_radar = go.Figure()
+            colors_radar = [GREEN, BLUE, WARN, RED, MUTED2]
+            for i, s in enumerate(all_scores[:5]):
+                vals = [
+                    s["components"]["roi"]["score"],
+                    s["components"]["quality"]["score"],
+                    s["components"]["coverage"]["score"],
+                    s["components"]["cost_eff"]["score"],
+                    s["components"]["volume"]["score"],
+                ]
+                fig_radar.add_trace(go.Scatterpolar(
+                    r=vals + [vals[0]],
+                    theta=categories + [categories[0]],
+                    fill="toself",
+                    name=s["workflow_name"][:20],
+                    line=dict(color=colors_radar[i % len(colors_radar)], width=2),
+                    fillcolor=colors_radar[i % len(colors_radar)],
+                    opacity=0.15
+                ))
+            fig_radar.update_layout(
+                paper_bgcolor=SURF, plot_bgcolor=SURF,
+                polar=dict(
+                    bgcolor=SURF2,
+                    radialaxis=dict(visible=True, range=[0,100], gridcolor=BORDER,
+                                    tickfont=dict(color=MUTED2, size=8)),
+                    angularaxis=dict(gridcolor=BORDER, tickfont=dict(color=TEXT, size=10))
+                ),
+                legend=dict(bgcolor=SURF2, bordercolor=BORDER, font=dict(color=MUTED2, size=9)),
+                margin=dict(l=60,r=60,t=30,b=30), height=350
+            )
+            st.plotly_chart(fig_radar, use_container_width=True, config={"displayModeBar": False})
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 12 — TEAM ROI DASHBOARD
+# ═══════════════════════════════════════════════════════════════════════════════
+with tab12:
+    st.markdown('<div class="panel-title">// Team ROI Dashboard — AI Spend & Value by Department</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-bar">Tag any workflow with a team name. See total ROI broken down by department. Identify which teams get most value from AI — and which are burning budget without results.</div>', unsafe_allow_html=True)
+
+    tr1, tr2 = st.columns([1, 1.6])
+
+    with tr1:
+        st.markdown('<div class="panel-title">// Tag a Workflow</div>', unsafe_allow_html=True)
+        db_wfs3 = get_db().execute("SELECT workflow_id, name FROM workflows").fetchall()
+        wf_map3 = {f"{w['name']}": w['workflow_id'] for w in db_wfs3}
+
+        if wf_map3:
+            with st.form("tag_form", clear_on_submit=True):
+                tag_wf   = st.selectbox("Workflow", list(wf_map3.keys()))
+                team_nm  = st.text_input("Team Name", placeholder="e.g. Customer Success")
+                dept_nm  = st.text_input("Department", placeholder="e.g. Operations")
+                owner_nm = st.text_input("Owner", placeholder="e.g. Sarah Chen")
+                if st.form_submit_button("👥  Tag Workflow", use_container_width=True):
+                    if team_nm:
+                        result = team_roi.tag_workflow(wf_map3[tag_wf], team_nm, dept_nm, owner_nm)
+                        st.success(f"✓ Tagged '{tag_wf}' → Team: {team_nm}")
+                    else:
+                        st.error("Team name required")
+        else:
+            st.info("Register workflows in the sidebar first.")
+
+        # Quick tag presets
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="panel-title">// Quick Tag — Demo Setup</div>', unsafe_allow_html=True)
+        if st.button("⚡  Auto-Tag Seeded Workflows", use_container_width=True):
+            presets = [
+                ("wf_support", "Customer Success", "Operations"),
+                ("wf_sales",   "Revenue",          "Sales"),
+                ("wf_fraud",   "Risk & Compliance","Finance"),
+                ("wf_code",    "Engineering",      "Product"),
+                ("wf_docs",    "Legal",            "Operations"),
+            ]
+            for wid, team, dept in presets:
+                try:
+                    team_roi.tag_workflow(wid, team, dept)
+                except Exception:
+                    pass
+            st.success("✓ All 5 workflows tagged to teams. Refresh the right panel.")
+
+    with tr2:
+        st.markdown('<div class="panel-title">// ROI by Team (Last 30 Days)</div>', unsafe_allow_html=True)
+        team_data = team_roi.get_team_breakdown()
+
+        if not team_data:
+            st.markdown(f'<div style="border:1px dashed {BORDER};padding:32px;text-align:center;font-family:Space Mono,monospace;font-size:11px;color:{MUTED};">Tag workflows to teams on the left.<br>Use <span style="color:{GREEN}">⚡ Auto-Tag</span> to see a demo instantly.</div>', unsafe_allow_html=True)
+        else:
+            # Summary bar chart
+            df_teams = pd.DataFrame(team_data)
+            fig_teams = go.Figure()
+            fig_teams.add_trace(go.Bar(
+                name="Cost", x=df_teams["team"], y=df_teams["total_cost"],
+                marker_color=WARN, opacity=0.85
+            ))
+            fig_teams.add_trace(go.Bar(
+                name="Value", x=df_teams["team"], y=df_teams["total_value"],
+                marker_color=GREEN, opacity=0.85
+            ))
+            fig_teams.update_layout(
+                paper_bgcolor=SURF, plot_bgcolor=SURF,
+                font=dict(family="Space Mono, monospace", color=MUTED2, size=10),
+                margin=dict(l=44,r=16,t=36,b=44), barmode="group", height=240,
+                xaxis=dict(gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
+                yaxis=dict(gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
+                title=dict(text="Cost vs Value by Team", font=dict(size=10, color=MUTED)),
+                legend=dict(bgcolor=SURF2, bordercolor=BORDER, font=dict(color=MUTED2, size=9))
+            )
+            st.plotly_chart(fig_teams, use_container_width=True, config={"displayModeBar": False})
+
+            # Team cards
+            for t in team_data:
+                roi_c_t = GREEN if t["roi_pct"] >= 0 else RED
+                best_wf  = t["best_workflow"]
+                worst_wf = t["worst_workflow"]
+                st.markdown(f"""
+                <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {roi_c_t};padding:14px 16px;margin-bottom:10px;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                    <div>
+                      <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:{TEXT};">👥 {t['team']}</div>
+                      {f'<div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};">{t["department"]} {("· " + t["owner"]) if t["owner"] else ""}</div>' if t["department"] else ""}
+                    </div>
+                    <div style="font-family:Space Mono,monospace;font-size:22px;font-weight:700;color:{roi_c_t};">{t['roi_pct']:+.1f}%</div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-family:Space Mono,monospace;font-size:9px;">
+                    <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Workflows</div><div style="color:{TEXT};font-size:13px;font-weight:700;">{t['workflows']}</div></div>
+                    <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Calls</div><div style="color:{TEXT};font-size:13px;font-weight:700;">{t['monthly_calls']}</div></div>
+                    <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Cost</div><div style="color:{WARN};font-size:13px;font-weight:700;">${t['total_cost']:.4f}</div></div>
+                    <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Value</div><div style="color:{GREEN};font-size:13px;font-weight:700;">${t['total_value']:.2f}</div></div>
+                    <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Quality</div><div style="color:{BLUE};font-size:13px;font-weight:700;">{t['avg_quality']:.2f}</div></div>
+                  </div>
+                  {f'<div style="margin-top:8px;font-family:Space Mono,monospace;font-size:9px;display:flex;gap:16px;"><span style="color:{MUTED};">Best: <span style="color:{GREEN}">{best_wf["name"]} ({best_wf["roi"]:+.0f}%)</span></span><span style="color:{MUTED};">Worst: <span style="color:{RED}">{worst_wf["name"]} ({worst_wf["roi"]:+.0f}%)</span></span></div>' if best_wf and worst_wf else ""}
+                </div>""", unsafe_allow_html=True)
