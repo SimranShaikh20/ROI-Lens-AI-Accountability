@@ -1,346 +1,681 @@
-# 🔬 ROI Lens — AI Accountability Agent
-
-**Mistral Worldwide Hackathon 2026 · Track: Developer Tools & Software Lifecycle**
-
-> *Here is the pain: developers ship AI features with no way to know if they are working, breaking, or burning money. Here is what ROI Lens does about it: five autonomous agents watch every AI call in production, react to triggers automatically, and take action before problems become disasters. Here is what changes for developers: you stop flying blind.*
-
----
-
-## The Pain
-
-Every developer who has shipped an AI-powered feature into production knows this feeling.
-
-You open the Mistral invoice on the first of the month. The number is higher than last month. You don't know why. You pull up your logs. You see API calls. You see token counts. You cannot see whether any of those calls actually helped a user, closed a deal, caught a fraud, or fixed a bug.
-
-You have shipped an AI feature. You have no idea if it is working.
-
-This is not a logging problem. You have logs. This is a **signal problem** — your logs tell you what happened but not whether it mattered.
-
-Meanwhile three things are quietly going wrong:
-
-**1. A workflow's quality score has been declining for 11 days.**
-Nobody noticed. The outputs started getting worse after a system prompt change two weeks ago. Users are complaining to support. Your team thinks it's a product issue. It's an AI issue. But there's no metric that caught it.
-
-**2. You're using `mistral-large-latest` for a task that `mistral-small-latest` handles equally well.**
-It's costing you $340/month more than necessary. Nobody ran the comparison because it felt like too much work to set up a proper test.
-
-**3. One workflow crossed the monthly budget limit four days ago.**
-The alert went to an email inbox nobody checks. Calls are still running. The bill is still growing.
-
-These are not edge cases. These are the normal operating conditions of any team running AI in production.
-
----
-
-## What ROI Lens Does About It
-
-ROI Lens is an accountability agent layer that wraps any Mistral AI deployment. It does not replace your existing code. It sits between your application and the Mistral API and runs five autonomous agents in the background.
-
-**It is not a chat interface. The agents react to data triggers and take action without being asked.**
-
-Here is what fires automatically, with no human in the loop:
-
----
-
-### Agent 1 — The Quality Evaluator
-**Trigger:** Every single API call, immediately after the response arrives.
-
-**What it does:** A second lightweight Mistral model reads the response and scores it from 0.0 to 1.0 across four dimensions — task completion, business relevance, accuracy, and efficiency. This score is saved to the database alongside the call.
-
-**Why it matters for developers:** You now have a continuous quality signal on every AI feature in production. Not just "did it return a response" but "was the response actually good." When a system prompt change breaks quality, you see it in the score trend the same day — not two weeks later when users start complaining.
-
-**What changes for developers:** You have a quality time series for every AI feature. Deployments that hurt quality show up as a score drop. Prompt improvements show up as a score rise. You can correlate AI quality changes with user behaviour metrics for the first time.
-
----
-
-### Agent 2 — The Kill-Switch Engine
-**Trigger:** Automatically runs every time the dashboard loads. Also callable programmatically.
-
-**What it does:** Scans every AI workflow that has had at least three calls in the last seven days. For each one, it computes cost vs recorded business value and fires a severity-classified alert if something is wrong.
-
-The exact logic from the codebase:
+<div align="center">
 
 ```
-ROI < -50%   → CRITICAL  "Losing money fast. Pause immediately."
-ROI <   0%   → WARNING   "Not yet profitable. Review model and prompt."
-Quality < 0.6 → WARNING  "Outputs unreliable. Fix system prompt."
-Outcomes < 20% → INFO    "Blind spot. Add outcome tracking."
+██████╗  ██████╗ ██╗    ██╗     ███████╗███╗   ██╗███████╗
+██╔══██╗██╔═══██╗██║    ██║     ██╔════╝████╗  ██║██╔════╝
+██████╔╝██║   ██║██║    ██║     █████╗  ██╔██╗ ██║███████╗
+██╔══██╗██║   ██║██║    ██║     ██╔══╝  ██║╚██╗██║╚════██║
+██║  ██║╚██████╔╝██║    ███████╗███████╗██║ ╚████║███████║
+╚═╝  ╚═╝ ╚═════╝ ╚═╝    ╚══════╝╚══════╝╚═╝  ╚═══╝╚══════╝
 ```
 
-**Why it matters for developers:** This is the difference between finding out a workflow is broken at the end-of-month review versus finding out the same day it crosses a threshold. The agent fires the alert. The developer does not have to remember to check.
+# 🔬 AI Accountability Layer
 
-**What changes for developers:** Broken or unprofitable AI features get flagged before they become a line item in a budget cut conversation. The agent creates the audit trail that shows when the problem started and what the specific threshold violation was.
+**5 Autonomous Agents · 12 Live Dashboards · Zero Blind Spots**
 
----
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.40-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Mistral AI](https://img.shields.io/badge/Mistral_AI-Powered-FF6B35?style=for-the-badge)](https://mistral.ai)
+[![Plotly](https://img.shields.io/badge/Plotly-Charts-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com)
+[![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
 
-### Agent 3 — The Anomaly Detector
-**Trigger:** Fires on demand but operates on live production data from the last 72 hours.
-
-**What it does:** Learns the statistical baseline for each workflow from the rolling 30-day window of real API calls — average cost per call, average latency, average quality score. Then scans recent calls and flags any that deviate beyond a configurable sigma threshold (default 2.5 standard deviations).
-
-It detects three anomaly types:
-
-- **Cost spike** — a call cost significantly more than normal (example: $0.0042 vs baseline of $0.0008 — that is 4.2σ above normal)
-- **Latency spike** — a call took significantly longer than normal (indicates model degradation or network issue)
-- **Quality drop** — a call scored significantly below the workflow's quality baseline
-
-**Why it matters for developers:** Anomalies in production AI systems often appear before they cause visible user impact. A cost spike can mean a prompt is sending unexpectedly large context. A latency spike can mean the model tier changed. A quality drop can mean a dependency silently broke. The anomaly detector surfaces these before they become incidents.
-
-**What changes for developers:** You get a 72-hour rolling anomaly log for every AI feature. The agent computes the z-score of each deviation so you know exactly how unusual the event is — not just that it happened.
+*Mistral Worldwide Hackathon 2026 · Track: Developer Tools & Software Lifecycle*
 
 ---
 
-### Agent 4 — The Budget Guardian
-**Trigger:** Fires automatically every time a new API call is logged for a budget-tracked workflow.
+**[✨ Features](#-features) · [🚀 Quick Start](#-quick-start) · [🏗️ Architecture](#%EF%B8%8F-architecture) · [🤖 The 5 Agents](#-the-5-autonomous-agents) · [📊 Dashboard](#-12-dashboard-pages) · [🔌 Integration](#-integration)**
 
-**What it does:** Computes current spend against budget in real time from the database. Calculates daily burn rate from actual historical calls. Projects days remaining at current rate. Fires severity-classified alerts at user-configured thresholds (default 80% of budget used).
-
-The system also supports one-click pause — which stops calls from being made for a workflow when it crosses its limit.
-
-**Why it matters for developers:** AI cost spikes in production are not gradual. A change in how a feature is used (users sending longer messages, a new integration triggering more calls) can double your monthly bill in three days. Budget Guardian catches this at 80% and gives you time to respond, not at 120% when the damage is done.
-
-**What changes for developers:** AI features have enforced cost ceilings. The CFO conversation about surprise AI bills becomes a dashboard screenshot conversation instead.
+</div>
 
 ---
 
-### Agent 5 — The Quality Evaluator (Exec Report Generator)
-**Trigger:** Fires on demand. Reads live database state to produce the report.
+## 💥 The Problem
 
-**What it does:** Passes current dashboard data — all workflow costs, ROI figures, quality trends, alert states — to Mistral and asks it to write a plain-English executive brief. The report covers total spend, best performing workflows, worst performing workflows, and one concrete recommendation. It writes from your actual data, not a template.
+Every team shipping AI features into production faces the same invisible crisis:
 
-**Why it matters for developers:** The biggest soft cost in running AI features is the time developers spend writing status reports for leadership. This agent eliminates that. The report is generated from live data and is accurate to the minute it is generated.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    THE AI BLACK BOX PROBLEM                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Your App  ──────────────────────────────►  Mistral API       │
+│                                                                 │
+│   ✅ You know: the call was made                                │
+│   ✅ You know: tokens were consumed                             │
+│   ✅ You know: you were billed                                  │
+│                                                                 │
+│   ❌ You DON'T know: was the output any good?                   │
+│   ❌ You DON'T know: did it create business value?              │
+│   ❌ You DON'T know: which workflow is costing too much?        │
+│   ❌ You DON'T know: when quality started dropping?             │
+│   ❌ You DON'T know: are you using the right model?             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-**What changes for developers:** You stop translating technical metrics into business language manually. The agent does it.
+Meanwhile, **three silent disasters** are happening right now at most AI teams:
 
----
+| 🔴 Silent Disaster | What's Actually Happening |
+|---|---|
+| **Quality Decay** | A prompt change 11 days ago broke output quality. Users are complaining. Your team thinks it's a product bug. |
+| **Model Overspend** | You're using `mistral-large` for tasks `mistral-small` handles equally well. That's $340/month wasted. |
+| **Budget Overrun** | A workflow crossed its monthly limit 4 days ago. The alert email went unread. Costs are still climbing. |
 
-## The Full Feature Set
-
-Beyond the five agents, ROI Lens includes eight additional tools that developers use manually to investigate, optimise, and plan:
-
-### 📊 Dashboard
-Live KPI view of every AI workflow: total cost, total value, net ROI, call volume, average quality. Workflow table with ROI colour coding. 14-day call volume trend. Model cost breakdown. Full audit trail of every API call with timestamp, cost, quality score, and linked business outcome.
-
-### 🚀 Live Demo (Tracked API Call)
-Make a real Mistral API call from the dashboard. See the cost calculated to six decimal places the instant the response arrives. Get a call ID to record outcomes against. Every call goes through the same tracking layer as production calls.
-
-### 💰 Record Outcome
-The mechanism that closes the ROI loop. After an AI call produces a real business result — a ticket resolved, a fraud caught, a sale closed — you paste the call ID and enter the dollar value. The system calculates ROI for that specific call and saves it permanently. Five outcome types built in: time saved, conversion, fraud prevented, reply received, bug caught.
-
-### 🔬 A/B Model Tester
-Select any two Mistral models. Enter a prompt. Both calls fire in parallel via `asyncio.gather`. Side-by-side comparison of cost, latency, input tokens, and output tokens. The system calculates savings percentage and outputs a direct recommendation. Every test result is saved to history. This is how developers answer "should we switch models for this workflow" with data instead of opinion.
-
-### 🔮 ROI Forecaster
-Linear regression on real historical call data. Projects cost, value, and ROI for any horizon from 7 to 90 days. Combined chart of historical actuals and projected values with a today marker. Confidence score based on data volume and variance. Everything computed from the actual database — no invented trends.
-
-### 📚 Smart Prompt Library
-Save prompts with titles and tags. The system tracks which saved prompts produce the highest quality scores and ROI over real usage. Prompts are ranked by a composite performance score (60% quality, 40% ROI signal). Developers stop rewriting prompts from memory and start building from what actually worked.
-
-### ⚙️ Cost Optimizer
-Analyses real quality scores per model per workflow from the database. Recommends the cheapest model that still meets a quality threshold the developer sets. Shows projected annual savings at current call volumes. If no real data exists for a model on a given workflow, it estimates from known quality ceilings.
-
-### 🏆 Workflow Health Score
-Single score from 0 to 100 per workflow. Five weighted components: ROI performance (30%), output quality (25%), outcome coverage (20%), cost efficiency trend (15%), call volume consistency (10%). Letter grade A through D. Radar chart comparing all workflows. One specific fix recommendation per workflow based on its lowest-scoring component.
-
-### 👥 Team ROI Dashboard
-Tag workflows to team names and departments. Full ROI breakdown per team from real database joins: total cost, total value, net ROI, quality average, best workflow, worst workflow. Bar chart comparing teams. This is the answer to budget debates where every team claims their AI is valuable. The data replaces the argument.
+> *These aren't edge cases. This is the normal operating condition of every team running AI in production without an accountability layer.*
 
 ---
 
-## What "Agents React to Triggers" Looks Like in Practice
+## ✨ The Solution
 
-The hackathon brief asks for agents that react to triggers and take action. Here is exactly how that works in ROI Lens for a real development team over a real week:
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          ROI LENS IN ACTION                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│   Your App  ──►  [ ROI LENS LAYER ]  ──►  Mistral API                 │
+│                         │                                               │
+│              ┌──────────┴──────────────────────┐                       │
+│              │                                 │                       │
+│              ▼                                 ▼                       │
+│     📊 Every call logged              🤖 Quality scored               │
+│     💰 Cost calculated                ⚠️  Anomalies flagged            │
+│     🔗 Outcomes linked                💸 Budget tracked                │
+│     📈 ROI computed                   🔔 Alerts triggered              │
+│              │                                                          │
+│              └──────────────────────────────────────────────────────►  │
+│                              Live Dashboard                             │
+│                    "Which AI is making money? Which isn't?"            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-**Monday morning:** Developer merges a prompt change for the Customer Support workflow.
+**ROI Lens** is a middleware accountability agent that wraps any Mistral AI deployment. It intercepts every API call, runs 5 autonomous agents in the background, and surfaces everything through a live 12-page dashboard.
 
-**Monday afternoon:** The Quality Evaluator fires on every call going through the updated prompt. Quality scores for the workflow drop from 0.81 average to 0.58 average across 23 calls.
-
-**Monday evening:** The Kill-Switch Engine fires on the next dashboard load. Severity: WARNING. Reason: "Average quality score is 0.58 — outputs may be unreliable." Recommendation: "Improve system prompt, add examples, or switch to larger model."
-
-**Tuesday morning:** Developer sees the alert. Checks the A/B Test tab. Runs the old prompt vs new prompt against the same model. Old prompt scores 0.84. New prompt scores 0.61. The regression is confirmed. Rollback takes 10 minutes.
-
-**Wednesday:** A new integration starts sending unusually long messages to the Fraud Detection workflow. Cost per call spikes from $0.002 to $0.009 — 3.8 standard deviations above baseline.
-
-**Wednesday afternoon:** Anomaly Detector flags the spike. Developer investigates the integration. Finds that a connected system started prepending full customer history to every prompt. Fixes the truncation. Cost returns to baseline.
-
-**Friday:** The Sales Email workflow hits 82% of its monthly budget with 12 days left in the month. Budget Guardian fires. Developer adjusts the workflow to only trigger on leads above a certain score threshold. Burn rate drops. Budget is no longer on track to overrun.
-
-None of these required the developer to check anything. The agents caught the problems and surfaced them.
+**Chat alone won't qualify — ROI Lens is all agents. Every agent reacts to triggers. Every agent takes action without being asked.**
 
 ---
 
-## Integration — Two Lines of Code
+## 🏗️ Architecture
 
-The entire tracking layer activates with one change to existing code. No architecture changes. No new infrastructure.
+### System Overview
 
-**Before:**
+```
+╔═══════════════════════════════════════════════════════════════════════╗
+║                        ROI LENS ARCHITECTURE                          ║
+╠═══════════════════════════════════════════════════════════════════════╣
+║                                                                        ║
+║  ┌──────────────┐    ┌─────────────────────────────────────────────┐  ║
+║  │  Your App /  │    │              ROI LENS LAYER                 │  ║
+║  │  Integration │───►│                                             │  ║
+║  └──────────────┘    │  ┌─────────────┐   ┌───────────────────┐   │  ║
+║                       │  │mistral_     │   │   roi_engine.py   │   │  ║
+║                       │  │wrapper.py   │   │                   │   │  ║
+║                       │  │             │   │ • ROI Calculator  │   │  ║
+║                       │  │ • Intercept │   │ • Kill-Switch     │   │  ║
+║                       │  │ • Cost Calc │   │ • Outcome Linker  │   │  ║
+║                       │  │ • Quality   │   │ • Alert Engine    │   │  ║
+║                       │  │   Scorer    │   └────────┬──────────┘   │  ║
+║                       │  └──────┬──────┘            │              │  ║
+║                       │         │                    │              │  ║
+║                       │         ▼                    ▼              │  ║
+║                       │  ┌─────────────────────────────────────┐   │  ║
+║                       │  │           SQLite Database           │   │  ║
+║                       │  │                                     │   │  ║
+║                       │  │  api_calls │ outcomes │ workflows   │   │  ║
+║                       │  │  budgets   │ ab_tests │ teams       │   │  ║
+║                       │  └─────────────────────────────────────┘   │  ║
+║                       │         │                                   │  ║
+║                       └─────────┼───────────────────────────────────┘  ║
+║                                 │                                        ║
+║                                 ▼                                        ║
+║  ┌──────────────────────────────────────────────────────────────────┐   ║
+║  │                    STREAMLIT DASHBOARD                           │   ║
+║  │   📊 Dashboard  🚀 Live Demo  💰 Outcomes  ⚠️ Kill-Switch        │   ║
+║  │   📝 Reports    💸 Budget     🔬 A/B Test  🔮 Forecaster         │   ║
+║  │   📚 Library    ⚙️ Optimizer  🏆 Health    👥 Team ROI            │   ║
+║  └──────────────────────────────────────────────────────────────────┘   ║
+║                                                                          ║
+║  ┌──────────────────────────────────────────────────────────────────┐   ║
+║  │                    MISTRAL API                                   │   ║
+║  │   mistral-large-latest  │  mistral-small-latest  │  codestral   │   ║
+║  └──────────────────────────────────────────────────────────────────┘   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+### Data Flow — Every Single API Call
+
+```
+  Step 1          Step 2          Step 3          Step 4          Step 5
+    │               │               │               │               │
+    ▼               ▼               ▼               ▼               ▼
+┌───────┐      ┌─────────┐     ┌─────────┐    ┌─────────┐    ┌─────────┐
+│ App   │      │ ROI     │     │ Mistral │    │ ROI     │    │ Agents  │
+│ sends │─────►│ Lens    │────►│   API   │───►│ Lens    │───►│  fire   │
+│request│      │intercept│     │processes│    │ logs &  │    │ on the  │
+│       │      │& logs   │     │  call   │    │ scores  │    │ result  │
+└───────┘      └─────────┘     └─────────┘    └─────────┘    └─────────┘
+                   │                               │
+                   ▼                               ▼
+             call_id created              ┌─────────────────┐
+             cost calculated             │  Quality Agent  │
+             latency measured            │  scores output  │
+                                         │  0.0 → 1.0      │
+                                         └─────────────────┘
+```
+
+### The ROI Loop — Connecting AI to Business Value
+
+```
+                         THE ROI LOOP
+                         ════════════
+
+  ┌─────────────────────────────────────────────────────────┐
+  │                                                         │
+  │   1. API CALL           2. TRACKING                     │
+  │   ┌──────────┐         ┌──────────────────────────┐    │
+  │   │ Mistral  │         │ call_id: abc-123          │    │
+  │   │ responds │────────►│ cost:   $0.0048           │    │
+  │   │          │         │ tokens: 1,240             │    │
+  │   └──────────┘         │ latency: 842ms            │    │
+  │                        │ quality: 0.87             │    │
+  │                        └───────────┬──────────────┘    │
+  │                                    │                     │
+  │                                    ▼                     │
+  │   4. ROI CALCULATED     3. OUTCOME LINKED               │
+  │   ┌──────────────┐      ┌──────────────────────────┐   │
+  │   │ ROI = 10,316%│      │ call_id: abc-123          │   │
+  │   │              │◄─────│ type: fraud_prevented     │   │
+  │   │ Cost: $0.0048│      │ value: $500               │   │
+  │   │ Value: $500  │      │ verified: true            │   │
+  │   └──────────────┘      └──────────────────────────┘   │
+  │                                                         │
+  └─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🤖 The 5 Autonomous Agents
+
+> *These are not chatbots. They don't wait to be asked. They react to triggers and take action.*
+
+---
+
+### Agent 1 — 🎯 Quality Evaluator
+
+```
+  TRIGGER: Every API call · immediately after response arrives
+  ════════════════════════════════════════════════════════════
+
+  API Call ──► Mistral responds ──► Quality Agent fires
+                                           │
+                              ┌────────────┘
+                              ▼
+                   ┌─────────────────────┐
+                   │  Scoring Dimensions  │
+                   ├─────────────────────┤
+                   │ ✓ Task Completion   │
+                   │ ✓ Business Value    │
+                   │ ✓ Accuracy          │
+                   │ ✓ Efficiency        │
+                   └──────────┬──────────┘
+                              │
+                              ▼
+                   Score: 0.0 ─────────── 1.0
+                          BAD            GREAT
+                              │
+                              ▼
+                   Saved to DB with call_id
+                   Powers health scores, trends, alerts
+```
+
+**What changes:** You see quality trends per workflow per day. A prompt change that hurts quality shows up **that same day** — not two weeks later when users start complaining.
+
+---
+
+### Agent 2 — ⚠️ Kill-Switch Engine
+
+```
+  TRIGGER: Fires on every dashboard load · also callable programmatically
+  ═══════════════════════════════════════════════════════════════════════
+
+  Scans ALL workflows with 3+ calls in last 7 days
+                    │
+         ┌──────────┼──────────┬──────────┐
+         ▼          ▼          ▼          ▼
+      ROI < -50%  ROI < 0%  Quality   Outcomes
+                            < 0.6     < 20%
+         │          │          │          │
+         ▼          ▼          ▼          ▼
+      🔴 CRITICAL  🟡 WARNING 🟡 WARNING  🔵 INFO
+      "Pause now"  "Review"  "Fix prompt" "Add tracking"
+         │
+         ▼
+  Specific recommendation generated per workflow
+  Alert surfaced on dashboard instantly
+```
+
+**What changes:** Broken or money-losing AI features get caught **the same day** they cross a threshold — not at end-of-month budget review.
+
+---
+
+### Agent 3 — 🚨 Anomaly Detector
+
+```
+  TRIGGER: Scans last 72 hours of production calls on demand
+  ════════════════════════════════════════════════════════════
+
+  30-day rolling window per workflow
+           │
+           ▼
+  Baseline learned from real data:
+  ┌─────────────────────────────────────────┐
+  │  avg_cost:    $0.0008 per call          │
+  │  avg_latency: 644ms                     │
+  │  avg_quality: 0.81                      │
+  └────────────────┬────────────────────────┘
+                   │
+                   ▼
+  Recent call arrives:
+  ┌─────────────────────────────────────────┐
+  │  cost: $0.0042  ← 4.2σ above baseline  │ 🔴 COST SPIKE
+  │  latency: 2,100ms ← 3.1σ above        │ 🟡 LATENCY SPIKE
+  │  quality: 0.41  ← 2.8σ below          │ 🔴 QUALITY DROP
+  └─────────────────────────────────────────┘
+                   │
+                   ▼
+  Flagged with exact deviation + call_id
+  Developer knows WHAT broke and WHEN
+```
+
+**What changes:** You catch a runaway prompt sending 10x too many tokens **before** it doubles your monthly bill. You catch quality degradation **before** users churn.
+
+---
+
+### Agent 4 — 💸 Budget Guardian
+
+```
+  TRIGGER: Fires on every new API call logged for budget-tracked workflows
+  ═════════════════════════════════════════════════════════════════════════
+
+  Developer sets:                    System computes:
+  ┌─────────────────────┐           ┌─────────────────────────────┐
+  │ Budget: $50.00      │           │ Spent:     $38.20           │
+  │ Period: 30 days     │──────────►│ Remaining: $11.80           │
+  │ Alert at: 80%       │           │ Burn rate: $1.27/day        │
+  └─────────────────────┘           │ Days left: 9.3 days         │
+                                    │ Status:    ⚠️ WARNING (76%)  │
+                                    └─────────────────────────────┘
+
+  Alert thresholds:
+  0%──────────────────80%────────95%────100%──────────►
+  ✅ Healthy          ⚠️ Warn    🔴 Limit  💀 Over
+```
+
+**What changes:** AI costs have enforced ceilings. You get a warning at 80% — while there's still time to act. Not at 120% when the damage is done.
+
+---
+
+### Agent 5 — 📝 Executive Report Generator
+
+```
+  TRIGGER: On demand · reads live database state at generation time
+  ═══════════════════════════════════════════════════════════════════
+
+  Live DB data ──► Mistral prompt ──► Plain English CFO Brief
+       │
+       ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  Data fed to Mistral:                                   │
+  │  • Total AI spend this period                          │
+  │  • ROI per workflow (green/red)                        │
+  │  • Best performing workflow + ROI%                     │
+  │  • Worst performing workflow + reason                  │
+  │  • Quality trends                                      │
+  │  • Kill-switch alerts active                           │
+  └────────────────────────────┬────────────────────────────┘
+                               │
+                               ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  OUTPUT: 3-paragraph executive brief                   │
+  │                                                         │
+  │  "Our AI portfolio generated $5,847 in business value  │
+  │   this month against $0.19 in API costs, representing  │
+  │   a 3,000,000%+ ROI. The Fraud Detection workflow..."  │
+  └─────────────────────────────────────────────────────────┘
+```
+
+**What changes:** The developer stops writing status reports. The agent writes them from live data in seconds.
+
+---
+
+## 📊 12 Dashboard Pages
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║                    NAVIGATION OVERVIEW                            ║
+╠═══════╦═══════════════════╦══════════════════════════════════════╣
+║ Icon  ║ Page              ║ What You See                         ║
+╠═══════╬═══════════════════╬══════════════════════════════════════╣
+║  📊   ║ Dashboard         ║ KPIs, ROI table, charts, audit trail ║
+║  🚀   ║ Live Demo         ║ Real tracked Mistral call + cost     ║
+║  💰   ║ Record Outcome    ║ Link AI call → business value ($)    ║
+║  ⚠️   ║ Kill-Switch       ║ Auto-flagged failing workflows       ║
+║  📝   ║ Exec Report       ║ AI-written CFO brief from live data  ║
+║  💸   ║ Budget Guard      ║ Spend limits + burn rate tracking    ║
+║  🔬   ║ A/B Model Test    ║ Parallel model comparison + savings  ║
+║  🔮   ║ Forecaster        ║ Linear regression cost/ROI forecast  ║
+║  📚   ║ Prompt Library    ║ Save + rank prompts by real ROI      ║
+║  ⚙️   ║ Cost Optimizer    ║ Cheapest model above quality bar     ║
+║  🏆   ║ Health Score      ║ 0-100 grade per workflow + radar     ║
+║  👥   ║ Team ROI          ║ Department-level ROI breakdown       ║
+╚═══════╩═══════════════════╩══════════════════════════════════════╝
+```
+
+### Dashboard — KPI Overview
+
+```
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ TOTAL COST  │ │   VALUE     │ │   NET ROI   │ │ API CALLS   │ │   QUALITY   │
+│             │ │ GENERATED   │ │             │ │             │ │    SCORE    │
+│  $0.1929    │ │  $5,976.52  │ │ +3,098,420% │ │     91      │ │     77%     │
+│ 137k tokens │ │ Net $5,976  │ │ ROI positive│ │ avg 1,032ms │ │ evaluator   │
+└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+```
+
+### Workflow Health Score — The AI Credit Score
+
+```
+  Each workflow gets scored across 5 dimensions:
+
+  ┌────────────────────────────────────────────────────────────┐
+  │   ROI Performance    ████████████████████░░░░  30% weight  │
+  │   Output Quality     ████████████████░░░░░░░░  25% weight  │
+  │   Outcome Coverage   ████████████░░░░░░░░░░░░  20% weight  │
+  │   Cost Efficiency    ████████████████████░░░░  15% weight  │
+  │   Call Volume        ████████░░░░░░░░░░░░░░░░  10% weight  │
+  └────────────────────────────────────────────────────────────┘
+
+  Combined → Single Score → Letter Grade
+
+  90-100: A  🟢  Excellent — expand this workflow
+  70-89:  B  🔵  Good — minor optimizations available
+  50-69:  C  🟡  Fair — specific issues to address
+  0-49:   D  🔴  Poor — needs immediate attention
+```
+
+---
+
+## 🔌 Integration
+
+### It Takes 2 Lines to Change
+
+**Before ROI Lens (standard Mistral call):**
+
 ```python
 from mistralai import Mistral
-response = Mistral(api_key=key).chat.complete(
-    model="mistral-large-latest",
-    messages=messages
+
+client   = Mistral(api_key="your_key")
+response = client.chat.complete(
+    model    = "mistral-large-latest",
+    messages = [{"role": "user", "content": "Your prompt here"}]
 )
 text = response.choices[0].message.content
+# ❌ No cost tracking
+# ❌ No quality scoring
+# ❌ No ROI measurement
+# ❌ No anomaly detection
+# ❌ No budget enforcement
 ```
 
-**After:**
+**After ROI Lens (full accountability — same result):**
+
 ```python
 import httpx
+
 result  = httpx.post("http://localhost:8000/api/chat", json={
-    "messages":            messages,
-    "workflow_id":         "wf_code_review",
-    "workflow_name":       "Code Review Assistant",
+    "messages":            [{"role": "user", "content": "Your prompt here"}],
+    "workflow_id":         "wf_fraud_detection",
+    "workflow_name":       "Fraud Detection",
     "model":               "mistral-large-latest",
-    "expected_value_usd":  20.0
+    "expected_value_usd":  500.0,               # what success is worth
+    "metadata":            {"transaction_id": "TXN-99821"}
 }).json()
-text    = result["content"]   # identical to before
-call_id = result["call_id"]   # new: permanent ID for outcome recording
+
+text    = result["content"]    # ✅ identical to before
+call_id = result["call_id"]    # ✅ NEW: permanent audit ID
+cost    = result["cost_usd"]   # ✅ NEW: exact cost this call
+# ✅ Quality scored automatically in background
+# ✅ Budget checked automatically
+# ✅ Anomaly detection running
 ```
 
-**Record the outcome when it happens:**
+**Record the business outcome when it happens:**
+
 ```python
+# Minutes or hours later, when a real result occurs:
 httpx.post("http://localhost:8000/api/outcomes", json={
     "call_id":             call_id,
-    "outcome_type":        "bug_caught",
-    "outcome_value_usd":   20.0,
-    "outcome_description": "Security vulnerability caught before merge"
+    "outcome_type":        "fraud_prevented",
+    "outcome_value_usd":   4899.00,         # the fraud amount blocked
+    "outcome_description": "Transaction flagged, $4,899 fraud prevented",
+    "verified":            True
 })
-```
 
-From this point forward, every call through that endpoint is tracked, quality-scored, anomaly-monitored, budget-tracked, and included in the kill-switch scan. All five agents are active with no further configuration.
+# ROI is now calculated automatically:
+# ($4,899 value - $0.0048 cost) / $0.0048 cost = 102,062,400% ROI
+```
 
 ---
 
-## The Audit Trail
-
-Every API call stored in ROI Lens creates a permanent record:
+## 🌍 Real World Use Cases
 
 ```
-call_id          — unique identifier, links to outcomes
-workflow_id      — which feature or workflow made this call
-model            — which Mistral model was used
-input_tokens     — exact token count (input)
-output_tokens    — exact token count (output)
-cost_usd         — calculated to 8 decimal places
-latency_ms       — round-trip time in milliseconds
-quality_score    — 0.0 to 1.0, scored by evaluator model
-quality_reason   — text explanation of the score
-created_at       — UTC timestamp
+╔══════════════════════════════════════════════════════════════════════════╗
+║                      INDUSTRY APPLICATIONS                              ║
+╠══════════════════╦═══════════════════════════════╦═════════════════════╣
+║ Industry         ║ AI Use Case                   ║ Tracked Outcome     ║
+╠══════════════════╬═══════════════════════════════╬═════════════════════╣
+║ 🏦 Banking       ║ Fraud detection on transact.  ║ $ fraud prevented   ║
+║ 🛒 E-Commerce    ║ Personalised sales emails     ║ conversion value    ║
+║ 💼 SaaS          ║ Support ticket AI drafts      ║ agent time saved    ║
+║ 🏥 Healthcare    ║ Clinical note assistance      ║ compliance audit    ║
+║ ⚖️  Legal         ║ Contract risk analysis        ║ risk $ avoided      ║
+║ 💻 Dev Tools     ║ Code review automation        ║ bugs caught value   ║
+╚══════════════════╩═══════════════════════════════╩═════════════════════╝
 ```
 
-This is a compliance-ready record of every AI decision made through the system. If a regulator asks "what AI was involved in this decision and how good was the output" — the answer is in the database with a timestamp.
+### A Real Week in Production (with ROI Lens)
+
+```
+MONDAY
+  10:00 AM │ Developer merges prompt change for Customer Support workflow
+  2:00  PM │ 🎯 Quality Agent flags: score dropped from 0.81 → 0.58
+  2:01  PM │ ⚠️  Kill-Switch alerts: "Quality 0.58 — outputs unreliable"
+  3:00  PM │ Developer sees alert, runs A/B test: old vs new prompt
+  3:05  PM │ A/B result: old prompt 0.84 quality, new prompt 0.61
+  3:15  PM │ Rollback deployed. Crisis resolved in 3 hours, not 2 weeks.
+
+WEDNESDAY
+  9:00  AM │ New integration starts prepending full history to prompts
+  9:01  AM │ 🚨 Anomaly Detector: cost spike 4.2σ above baseline
+  9:30  AM │ Developer traces to integration. Truncation fix deployed.
+  9:35  AM │ Cost returns to baseline. Monthly bill unaffected.
+
+FRIDAY
+  4:00  PM │ Sales Email workflow hits 82% of monthly budget
+  4:01  PM │ 💸 Budget Guardian fires WARNING alert
+  4:30  PM │ Developer adjusts trigger threshold. Overrun avoided.
+  5:00  PM │ CFO asks "what's our AI ROI this week?"
+  5:02  PM │ 📝 Exec Report generated. Answer ready in 90 seconds.
+```
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-### 1. Install
+### Prerequisites
 
 ```bash
-git clone <your-repo>
-cd roi-lens-streamlit
+Python 3.9+
+pip (package manager)
+Mistral API key (free at console.mistral.ai)
+```
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/SimranShaikh20/roi-lens
+cd roi-lens
+
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Add API Key
-
-```bash
+# 3. Set your API key
 cp .env.example .env
-# Set: MISTRAL_API_KEY=your_key_here
-```
+echo "MISTRAL_API_KEY=your_key_here" >> .env
 
-### 3. Run
-
-```bash
+# 4. Launch
 streamlit run app.py
 ```
 
-Open [http://localhost:8501](http://localhost:8501)
+Open **http://localhost:8501** — the dashboard loads instantly with 90 pre-seeded demo calls across 5 workflows. All 5 agents are active immediately.
 
-> No API key? The app loads with 90 pre-seeded demo calls across 5 workflows. All 5 agents run on the demo data immediately.
+### No API Key? No Problem.
 
-### 4. Verify
+The app loads in **full demo mode** with pre-seeded data:
+- 90 realistic API calls across 5 workflows
+- Real ROI calculations from seeded outcomes
+- Kill-switch alerts already firing on demo data
+- Health scores, anomaly baselines, forecasts — all working
 
 ```bash
+# Verify everything is working
 python3 -c "
 from database import init_db
 from roi_engine import ROIEngine
 init_db()
 d = ROIEngine().get_dashboard()
-alerts = ROIEngine().get_kill_switch_alerts()
-print('Calls:', d['summary']['total_calls'])
-print('ROI:  ', d['summary']['overall_roi_pct'], '%')
-print('Alerts:', len(alerts))
+a = ROIEngine().get_kill_switch_alerts()
+print('✅ Calls loaded:  ', d['summary']['total_calls'])
+print('✅ Overall ROI:   ', d['summary']['overall_roi_pct'], '%')
+print('✅ Active alerts: ', len(a))
 "
 ```
 
 ---
 
-## File Structure
+## 📁 File Structure
 
 ```
-roi-lens-streamlit/
+roi-lens/
 │
-├── app.py                 Streamlit dashboard — 12 pages, sidebar navigation
-│                          All 5 agents surface their output here
+├── 🎯 app.py                    Main dashboard — 12 pages, sidebar nav
+│                                1,400+ lines · zero placeholder values
 │
-├── roi_engine.py          Kill-Switch Engine + Outcome Linker
-│                          Core ROI calculation logic
-│                          get_kill_switch_alerts() — the trigger-based agent
+├── 🤖 roi_engine.py             Kill-Switch Engine + ROI Calculator
+│                                get_kill_switch_alerts() ← trigger agent
+│                                record_outcome() ← closes ROI loop
 │
-├── advanced_features.py   Budget Guardian, Anomaly Detector, A/B Tester,
-│                          ROI Forecaster, Prompt Optimizer
-│                          detect_anomalies() — statistical trigger agent
+├── ⚡ advanced_features.py       Budget Guardian ← spend trigger agent
+│                                Anomaly Detector ← statistical trigger agent
+│                                A/B Tester ← parallel model comparison
+│                                ROI Forecaster ← linear regression engine
 │
-├── power_features.py      Smart Prompt Library, Cost Optimizer,
-│                          Workflow Health Score, Team ROI Dashboard
+├── 💡 power_features.py         Smart Prompt Library ← performance ranking
+│                                Cost Optimizer ← cheapest model finder
+│                                Workflow Health Score ← 0-100 AI grade
+│                                Team ROI Dashboard ← dept breakdown
 │
-├── mistral_wrapper.py     API interception layer
-│                          Quality Evaluator agent runs here on every call
-│                          Exec Report Generator
+├── 🔗 mistral_wrapper.py        API intercept layer
+│                                Quality Evaluator agent ← fires every call
+│                                Executive Report Generator
 │
-├── database.py            SQLite schema — 7 tables
-│                          Auto-seeds 90 realistic demo calls on first run
+├── 🗄️  database.py              SQLite schema — 7 tables
+│                                Auto-seeds 90 demo calls on first run
 │
-├── requirements.txt
-└── .env.example
+├── 📋 requirements.txt
+├── 🔑 .env.example
+└── 🚀 start.sh
 ```
 
 ---
 
-## Demo Flow for Judges (3 Minutes)
+## 📦 Database Schema
 
-**Minute 1 — The agents are already working**
+```sql
+-- Every AI call ever made — the permanent audit trail
+api_calls (
+    call_id          TEXT PRIMARY KEY,   -- unique receipt ID
+    workflow_id      TEXT,               -- which feature
+    model            TEXT,               -- which Mistral model
+    input_tokens     INTEGER,            -- exact token count
+    output_tokens    INTEGER,            -- exact token count
+    cost_usd         REAL,               -- calculated to 8 decimal places
+    latency_ms       INTEGER,            -- round trip time
+    quality_score    REAL,               -- 0.0 to 1.0, auto-scored
+    quality_reason   TEXT,               -- why that score
+    created_at       TEXT                -- UTC timestamp
+)
 
-Open the dashboard. Point to the Kill-Switch tab — there are already alerts on the seeded data. One workflow is flagged WARNING. Show the specific reason and recommendation. Point to the audit trail at the bottom of the Dashboard page — every call logged with cost and quality score. This is the agent output running on demo data.
+-- Business results linked to calls
+outcomes (
+    outcome_id         TEXT PRIMARY KEY,
+    call_id            TEXT,             -- links to api_calls
+    outcome_type       TEXT,             -- fraud_prevented, conversion, etc
+    outcome_value_usd  REAL,             -- $ value of the outcome
+    verified           BOOLEAN,          -- human confirmed?
+    created_at         TEXT
+)
 
-**Minute 2 — Trigger an agent live**
-
-Go to Live Demo. Run a Fraud Detection call. Watch the cost appear: `$0.0048`. Copy the call ID. Go to Record Outcome. Enter `$500`. Click record. Go back to Dashboard and refresh. The ROI numbers update in real time. Go to Anomaly Detector and click Detect — show the baseline it learned from the seeded data.
-
-**Minute 3 — Show the developer tools**
-
-Go to A/B Test. Run `mistral-large-latest` vs `mistral-small-latest` on the same prompt. Show both completing in parallel. Show the savings percentage — typically 70-88% cheaper. Go to Health Score. Show every workflow with a letter grade and the radar comparison chart. Go to Budget Guardian and set a limit — show it calculating days remaining from real data immediately.
+-- Plus: workflows · budgets · ab_tests · prompt_library · workflow_teams
+```
 
 ---
 
-## Requirements
+## ⚙️ Requirements
 
 ```
-streamlit==1.40.2
-plotly==5.24.1
-pandas==2.2.3
-httpx==0.27.2
-python-dotenv==1.0.1
+streamlit==1.40.2      # Dashboard framework
+plotly==5.24.1         # Interactive charts
+pandas==2.2.3          # Data processing
+httpx==0.27.2          # Async HTTP client
+python-dotenv==1.0.1   # Environment config
 ```
 
-Python 3.9 or higher required.
+---
+
+## 🏆 Why This Wins
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║                   HACKATHON JUDGING CRITERIA                     ║
+╠══════════════════════╦═══════════════════════════════════════════╣
+║ Criterion            ║ How ROI Lens Delivers                     ║
+╠══════════════════════╬═══════════════════════════════════════════╣
+║ Agents not chat      ║ 5 trigger-based agents, zero chat UI      ║
+║ React to triggers    ║ Quality/cost/budget/anomaly all auto-fire ║
+║ Take action          ║ Alerts, pauses, recommendations generated ║
+║ Developer lifecycle  ║ Covers deploy → monitor → optimise → report║
+║ Real problem         ║ Every AI team has this exact problem       ║
+║ Story: pain → fix    ║ Full week-in-production narrative          ║
+║ Production ready     ║ SQLite → Postgres swap = 1 line           ║
+╚══════════════════════╩═══════════════════════════════════════════╝
+```
+
+
+
+<div align="center">
+
+## The One-Sentence Pitch
+
+*ROI Lens is the missing accountability layer for enterprise AI — five autonomous agents that watch every Mistral API call, catch problems before they become disasters, and prove to your CFO exactly which AI features are worth keeping.*
 
 ---
 
-## The Story in One Paragraph
+**Built with ❤️ for Mistral Worldwide Hackathon 2026**
 
-A developer ships an AI feature. It works on Tuesday. By Thursday, something changed — a prompt edit, a model update, a new integration — and the quality dropped. Nobody noticed for two weeks because there was no metric watching it. ROI Lens watches it. The Quality Evaluator scores every call. The Kill-Switch Engine scans for degradation every time the dashboard loads. The Anomaly Detector flags the day the cost pattern changed. The Budget Guardian caught the overspend before it doubled. The developer spends 10 minutes fixing a prompt instead of six weeks explaining to a CFO why the AI investment is not showing returns. That is the problem. That is the solution. That is what changes.
+*"The companies that survive the AI wave won't be the ones who used the most AI.*
+*They'll be the ones who knew which AI was worth keeping."*
 
----
-
-*Mistral Worldwide Hackathon 2026 · February 28 – March 1, 2026*
+</div>
