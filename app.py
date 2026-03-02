@@ -26,93 +26,112 @@ st.set_page_config(
 )
 
 # ─── PALETTE ──────────────────────────────────────────────────────────────────
-BG      = "#07080a"
-SURF    = "#0e1117"
-SURF2   = "#13161f"
-BORDER  = "#1e2530"
-GREEN   = "#00e5a0"
-BLUE    = "#4d9fff"
-RED     = "#ff4d6d"
-WARN    = "#ffb84d"
-TEXT    = "#e8eaf2"
-MUTED   = "#5a6070"
-MUTED2  = "#8890a0"
+BG      = "#0f1117"
+SURF    = "#1a1d27"
+SURF2   = "#22263a"
+BORDER  = "#2e3347"
+GREEN   = "#4ade80"
+BLUE    = "#60a5fa"
+RED     = "#f87171"
+WARN    = "#fbbf24"
+TEXT    = "#f1f5f9"
+MUTED   = "#64748b"
+MUTED2  = "#94a3b8"
 
 # ─── CSS ──────────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
-html,body,[class*="css"]{{font-family:'Syne',sans-serif!important;background:{BG}!important;color:{TEXT}!important}}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+html,body,[class*="css"]{{font-family:'Inter',sans-serif!important;background:{BG}!important;color:{TEXT}!important}}
 .stApp{{background:{BG}}}
 .block-container{{padding-top:1.2rem!important}}
 
 /* Sidebar */
 section[data-testid="stSidebar"]{{background:{SURF}!important;border-right:1px solid {BORDER}!important}}
 section[data-testid="stSidebar"] *{{color:{TEXT}!important}}
-section[data-testid="stSidebar"] input{{background:{SURF2}!important;color:{TEXT}!important;border:1px solid {BORDER}!important;border-radius:2px!important;font-family:'Space Mono',monospace!important;font-size:11px!important}}
-section[data-testid="stSidebar"] label{{color:{MUTED2}!important;font-size:10px!important;font-family:'Space Mono',monospace!important;letter-spacing:0.1em!important;text-transform:uppercase!important}}
+section[data-testid="stSidebar"] input{{background:{SURF2}!important;color:{TEXT}!important;border:1px solid {BORDER}!important;border-radius:2px!important;font-family:'DM Mono',monospace!important;font-size:11px!important}}
+section[data-testid="stSidebar"] label{{color:{MUTED2}!important;font-size:12px!important;font-family:'Inter',sans-serif!important;letter-spacing:0!important;text-transform:none!important;font-weight:500!important}}
 section[data-testid="stSidebar"] hr{{border-color:{BORDER}!important}}
 
-/* Tabs — nuclear override for all Streamlit versions */
-button[data-baseweb="tab"]{{
-    font-family:'Space Mono',monospace!important;
-    font-size:12px!important;
-    font-weight:700!important;
-    letter-spacing:0.08em!important;
-    text-transform:uppercase!important;
+/* Sidebar nav buttons (navigation only) */
+section[data-testid="stSidebar"] .stButton>button{{
+    font-family:'Inter',sans-serif!important;
+    font-size:13px!important;
+    letter-spacing:0!important;
+    text-transform:none!important;
+    background:{SURF2}!important;
     color:{TEXT}!important;
-    background:transparent!important;
-    border:none!important;
-    border-radius:0!important;
-    padding:14px 22px!important;
-    white-space:nowrap!important;
-    opacity:1!important;
+    border:1px solid {BORDER}!important;
+    border-radius:6px!important;
+    font-weight:400!important;
+    padding:9px 14px!important;
+    text-align:left!important;
+    margin-bottom:3px!important;
+    transition:all 0.15s!important;
 }}
-button[data-baseweb="tab"] *{{
-    color:{TEXT}!important;
-    font-family:'Space Mono',monospace!important;
-    font-size:12px!important;
-    font-weight:700!important;
-    opacity:1!important;
-}}
-button[data-baseweb="tab"][aria-selected="true"]{{
-    color:{GREEN}!important;
-    border-bottom:3px solid {GREEN}!important;
-    background:rgba(0,229,160,0.06)!important;
-}}
-button[data-baseweb="tab"][aria-selected="true"] *{{
-    color:{GREEN}!important;
-}}
-div[data-baseweb="tab-list"]{{
+section[data-testid="stSidebar"] .stButton>button:hover{{
     background:{SURF}!important;
-    border-bottom:1px solid {BORDER}!important;
-    gap:0!important;
-    overflow-x:auto!important;
-    padding:0!important;
+    color:{GREEN}!important;
+    border-color:{GREEN}!important;
 }}
-div[data-baseweb="tab-border"]{{display:none!important}}
-div[data-baseweb="tab-highlight"]{{background:{GREEN}!important;height:3px!important}}
-.stTabs [data-baseweb="tab-panel"]{{background:{BG}!important;padding-top:20px!important}}
+
+/* Form submit buttons (Register, Set Budget, etc.) — green with black text */
+section[data-testid="stSidebar"] .stFormSubmitButton>button{{
+    font-family:'Inter',sans-serif!important;
+    font-size:13px!important;
+    font-weight:700!important;
+    background:{GREEN}!important;
+    color:#000000!important;
+    border:none!important;
+    border-radius:6px!important;
+    padding:9px 14px!important;
+    width:100%!important;
+}}
+section[data-testid="stSidebar"] .stFormSubmitButton>button:hover{{
+    background:#22c55e!important;
+    color:#000000!important;
+}}
+section[data-testid="stSidebar"] .stFormSubmitButton>button *{{
+    color:#000000!important;
+}}
 
 /* Buttons */
-.stButton>button{{font-family:'Space Mono',monospace!important;font-size:11px!important;letter-spacing:0.12em!important;text-transform:uppercase!important;background:{GREEN}!important;color:{BG}!important;border:none!important;border-radius:0!important;font-weight:700!important;padding:8px 20px!important}}
-.stButton>button:hover{{background:#00ffb3!important;border:none!important}}
+.stButton>button{{font-family:'Inter',sans-serif!important;font-size:13px!important;letter-spacing:0!important;text-transform:none!important;background:{GREEN}!important;color:#000000!important;border:2px solid #2d8a50!important;border-radius:6px!important;font-weight:700!important;padding:8px 20px!important}}
+.stButton>button:hover{{background:#22c55e!important;border:2px solid #166534!important;color:#000000!important}}
+.stButton>button *{{color:#000000!important}}
+
+/* Form submit buttons — Register →, Tag Workflow, etc */
+.stFormSubmitButton>button{{font-family:'Inter',sans-serif!important;font-size:13px!important;font-weight:700!important;background:{GREEN}!important;color:#000000!important;border:2px solid #16a34a!important;border-radius:6px!important;padding:9px 20px!important;width:100%!important;letter-spacing:0!important;text-transform:none!important}}
+.stFormSubmitButton>button:hover{{background:#22c55e!important;color:#000000!important;border-color:#15803d!important}}
+.stFormSubmitButton>button p,.stFormSubmitButton>button span,.stFormSubmitButton>button div,.stFormSubmitButton>button *{{color:#000000!important;font-weight:700!important}}
 
 /* Inputs */
-.stTextInput input,.stTextArea textarea,.stNumberInput input{{background:{SURF2}!important;color:{TEXT}!important;border:1px solid {BORDER}!important;border-radius:2px!important;font-family:'Space Mono',monospace!important;font-size:12px!important}}
+.stTextInput input,.stTextArea textarea,.stNumberInput input{{background:{SURF2}!important;color:{TEXT}!important;border:1px solid {BORDER}!important;border-radius:6px!important;font-family:'Inter',sans-serif!important;font-size:13px!important}}
 .stTextInput input:focus,.stTextArea textarea:focus,.stNumberInput input:focus{{border-color:{GREEN}!important;box-shadow:none!important}}
-.stSelectbox>div>div{{background:{SURF2}!important;color:{TEXT}!important;border:1px solid {BORDER}!important;border-radius:2px!important;font-family:'Space Mono',monospace!important;font-size:12px!important}}
+.stSelectbox>div>div{{background:{SURF2}!important;color:{TEXT}!important;border:1px solid {BORDER}!important;border-radius:6px!important;font-family:'Inter',sans-serif!important;font-size:13px!important}}
 [data-baseweb="popover"],[data-baseweb="menu"]{{background:{SURF2}!important}}
 [data-baseweb="menu"] li{{color:{TEXT}!important;background:{SURF2}!important}}
 [data-baseweb="menu"] li:hover{{background:{BORDER}!important}}
-label,div[data-testid="stWidgetLabel"] p{{color:{MUTED2}!important;font-family:'Space Mono',monospace!important;font-size:10px!important;letter-spacing:0.12em!important;text-transform:uppercase!important}}
+label,div[data-testid="stWidgetLabel"] p{{color:{MUTED2}!important;font-family:'Inter',sans-serif!important;font-size:12px!important;letter-spacing:0!important;text-transform:none!important;font-weight:500!important}}
 .stCheckbox label p{{color:{TEXT}!important;font-size:12px!important;text-transform:none!important;letter-spacing:0!important}}
 
 /* Alerts */
 div[data-testid="stInfoMessage"],div[data-testid="stSuccessMessage"],
 div[data-testid="stWarningMessage"],div[data-testid="stErrorMessage"]{{background:{SURF2}!important;border-radius:0!important}}
 div[data-testid="stInfoMessage"] *,div[data-testid="stSuccessMessage"] *,
-div[data-testid="stWarningMessage"] *,div[data-testid="stErrorMessage"] *{{color:{TEXT}!important;font-family:'Space Mono',monospace!important;font-size:11px!important}}
+div[data-testid="stWarningMessage"] *,div[data-testid="stErrorMessage"] *{{color:{TEXT}!important;font-family:'DM Mono',monospace!important;font-size:11px!important}}
+
+/* Hide Streamlit default top header bar */
+header[data-testid="stHeader"]{{display:none!important}}
+#stDecoration{{display:none!important}}
+.stDeployButton{{display:none!important}}
+div[data-testid="stToolbar"]{{display:none!important}}
+div[data-testid="stDecoration"]{{display:none!important}}
+div[data-testid="stStatusWidget"]{{display:none!important}}
+.viewerBadge_container__1QSob{{display:none!important}}
+.styles_viewerBadge__1yB5_{{display:none!important}}
+#MainMenu{{display:none!important}}
+footer{{display:none!important}}
 
 /* Scrollbar */
 ::-webkit-scrollbar{{width:4px;height:4px}}
@@ -120,21 +139,21 @@ div[data-testid="stWarningMessage"] *,div[data-testid="stErrorMessage"] *{{color
 ::-webkit-scrollbar-thumb{{background:{BORDER}}}
 
 /* Custom components */
-.panel-title{{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:{MUTED};margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid {BORDER}}}
-.logo-h{{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:0.06em;color:{TEXT}}}
+.panel-title{{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:{MUTED2};margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid {BORDER}}}
+.logo-h{{font-family:'Inter',sans-serif;font-size:20px;font-weight:700;letter-spacing:0;color:{TEXT}}}
 .logo-h span{{color:{GREEN}}}
-.logo-s{{font-family:'Space Mono',monospace;font-size:9px;color:{MUTED};letter-spacing:0.2em;text-transform:uppercase;margin-top:2px}}
+.logo-s{{font-family:'Inter',sans-serif;font-size:11px;color:{MUTED2};letter-spacing:0;text-transform:none;margin-top:2px}}
 .kc{{background:{SURF};border:1px solid {BORDER};border-top:2px solid {GREEN};padding:18px 16px;margin-bottom:4px}}
-.kl{{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:{MUTED};margin-bottom:8px}}
-.kv{{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;line-height:1}}
-.ks{{font-family:'Space Mono',monospace;font-size:10px;margin-top:6px}}
-.rbox{{background:{SURF2};border:1px solid {GREEN};padding:18px;font-family:'Space Mono',monospace;font-size:12px;line-height:1.8;color:{TEXT};margin-top:12px;white-space:pre-wrap}}
-.chip{{display:inline-block;background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.25);color:{GREEN};font-family:'Space Mono',monospace;font-size:10px;padding:3px 10px;margin:3px 4px 3px 0}}
+.kl{{font-family:'Inter',sans-serif;font-size:11px;font-weight:500;letter-spacing:0;text-transform:none;color:{MUTED2};margin-bottom:8px}}
+.kv{{font-family:'Inter',sans-serif;font-size:24px;font-weight:700;line-height:1}}
+.ks{{font-family:'Inter',sans-serif;font-size:11px;margin-top:6px}}
+.rbox{{background:{SURF2};border:1px solid {BORDER};border-left:3px solid {GREEN};padding:18px;font-family:'Inter',sans-serif;font-size:13px;line-height:1.8;color:{TEXT};margin-top:12px;white-space:pre-wrap}}
+.chip{{display:inline-block;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:{GREEN};font-family:'Inter',sans-serif;font-size:11px;font-weight:500;padding:3px 10px;border-radius:4px;margin:3px 4px 3px 0}}
 .ac{{background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.25);border-left:3px solid {RED};padding:14px 16px;margin-bottom:12px}}
 .aw{{background:rgba(255,184,77,0.07);border:1px solid rgba(255,184,77,0.25);border-left:3px solid {WARN};padding:14px 16px;margin-bottom:12px}}
 .ai{{background:rgba(77,159,255,0.07);border:1px solid rgba(77,159,255,0.25);border-left:3px solid {BLUE};padding:14px 16px;margin-bottom:12px}}
-.rpt{{background:{SURF2};border:1px solid {BORDER};padding:28px;font-family:'Syne',sans-serif;font-size:14px;line-height:2;color:{TEXT};white-space:pre-wrap}}
-.info-bar{{background:{SURF2};border-left:2px solid {BLUE};padding:12px 16px;font-family:'Space Mono',monospace;font-size:11px;color:{MUTED2};margin-bottom:20px}}
+.rpt{{background:{SURF2};border:1px solid {BORDER};padding:28px;font-family:'Inter',sans-serif;font-size:14px;line-height:2;color:{TEXT};white-space:pre-wrap}}
+.info-bar{{background:{SURF2};border-left:3px solid {BLUE};padding:12px 16px;font-family:'Inter',sans-serif;font-size:13px;color:{MUTED2};margin-bottom:20px;border-radius:0 4px 4px 0}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -143,13 +162,13 @@ def plot_layout(**extra):
     """Return a clean Plotly layout dict. Pass legend= separately if needed."""
     return dict(
         paper_bgcolor=SURF, plot_bgcolor=SURF,
-        font=dict(family="Space Mono, monospace", color=MUTED2, size=10),
+        font=dict(family="DM Mono, monospace", color=MUTED2, size=10),
         margin=dict(l=44, r=16, t=36, b=44),
         xaxis=dict(gridcolor=BORDER, showgrid=True, zeroline=False,
                    linecolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
         yaxis=dict(gridcolor=BORDER, showgrid=True, zeroline=False,
                    linecolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
-        title=dict(font=dict(size=10, color=MUTED, family="Space Mono, monospace")),
+        title=dict(font=dict(size=10, color=MUTED, family="DM Mono, monospace")),
         **extra
     )
 
@@ -192,13 +211,13 @@ def dark_table(df: pd.DataFrame, height=280, col_widths=None, col_colors=None):
         header=dict(
             values=[f"<b>{c}</b>" for c in df.columns],
             fill_color=SURF2,
-            font=dict(color=MUTED2, size=10, family="Space Mono, monospace"),
+            font=dict(color=MUTED2, size=10, family="DM Mono, monospace"),
             align="left", line_color=BORDER, height=34,
         ),
         cells=dict(
             values=[df[c].tolist() for c in df.columns],
             fill_color=[row_fills] * ncols,
-            font=dict(color=font_color, size=11, family="Space Mono, monospace"),
+            font=dict(color=font_color, size=11, family="DM Mono, monospace"),
             align="left", line_color=BORDER, height=30,
         )
     )])
@@ -232,7 +251,7 @@ with st.sidebar:
     has_key = bool(api_key or os.getenv("MISTRAL_API_KEY"))
     kc = GREEN if has_key else RED
     kl = "✓ Key set — live mode" if has_key else "✗ No key — demo mode"
-    st.markdown(f'<div style="font-family:Space Mono,monospace;font-size:10px;color:{kc};margin-top:4px;">{kl}</div>',
+    st.markdown(f'<div style="font-family:DM Mono,monospace;font-size:10px;color:{kc};margin-top:4px;">{kl}</div>',
                 unsafe_allow_html=True)
     st.markdown("---")
 
@@ -257,21 +276,96 @@ with st.sidebar:
                 st.error("ID and Name required")
 
     st.markdown("---")
-    st.markdown(f'<div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};letter-spacing:0.15em;">MISTRAL HACKATHON 2026</div>',
+    st.markdown(f'<div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};letter-spacing:0.15em;">MISTRAL HACKATHON 2026</div>',
                 unsafe_allow_html=True)
 
 # ─── TABS ─────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
-    "📊  Dashboard", "🚀  Live Demo", "💰  Record Outcome",
-    "⚠️  Kill-Switch", "📝  Exec Report", "💸  Budget Guard",
-    "🔬  A/B Test", "🔮  Forecaster", "📚  Prompt Library",
-    "⚙️  Cost Optimizer", "🏆  Health Score", "👥  Team ROI"
-])
+# ── SIDEBAR NAVIGATION ────────────────────────────────────────────────────────
+NAV_PAGES = [
+    ("📊", "Dashboard"),
+    ("🚀", "Live Demo"),
+    ("💰", "Record Outcome"),
+    ("⚠️",  "Kill-Switch Alerts"),
+    ("📝", "Exec Report"),
+    ("💸", "Budget Guard"),
+    ("🔬", "A/B Model Test"),
+    ("🔮", "Forecaster"),
+    ("📚", "Prompt Library"),
+    ("⚙️",  "Cost Optimizer"),
+    ("🏆", "Health Score"),
+    ("👥", "Team ROI"),
+]
+
+if "active_page" not in st.session_state:
+    st.session_state["active_page"] = "Dashboard"
+
+# Inject sidebar nav AFTER the existing sidebar block
+with st.sidebar:
+    st.markdown(f'''<div style="font-family:DM Mono,monospace;font-size:9px;
+    color:{MUTED};letter-spacing:0.2em;text-transform:uppercase;
+    margin:16px 0 8px 0;padding-bottom:6px;border-bottom:1px solid {BORDER};">
+    Navigation</div>''', unsafe_allow_html=True)
+
+    for icon, name in NAV_PAGES:
+        is_active = st.session_state["active_page"] == name
+        if is_active:
+            # Active: green background
+            st.markdown(f'''<div style="background:{GREEN};color:{BG};
+                font-family:DM Mono,monospace;font-size:11px;font-weight:700;
+                padding:9px 12px;margin-bottom:3px;cursor:default;
+                letter-spacing:0.04em;">{icon} {name}</div>''', unsafe_allow_html=True)
+        else:
+            if st.button(f"{icon}  {name}", key=f"nav_{name}", use_container_width=True):
+                st.session_state["active_page"] = name
+                st.rerun()
+
+def show_page(name):
+    return st.session_state["active_page"] == name
+
+# Fake tab objects so all existing "with tabN:" blocks still work via containers
+class _FakePage:
+    def __init__(self, name): self.name = name
+    def __enter__(self): return self
+    def __exit__(self, *a): pass
+
+tab1  = _FakePage("Dashboard")
+tab2  = _FakePage("Live Demo")
+tab3  = _FakePage("Record Outcome")
+tab4  = _FakePage("Kill-Switch Alerts")
+tab5  = _FakePage("Exec Report")
+tab6  = _FakePage("Budget Guard")
+tab7  = _FakePage("A/B Model Test")
+tab8  = _FakePage("Forecaster")
+tab9  = _FakePage("Prompt Library")
+tab10 = _FakePage("Cost Optimizer")
+tab11 = _FakePage("Health Score")
+tab12 = _FakePage("Team ROI")
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — DASHBOARD
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab1:
+# ── PAGE TITLE BAR ─────────────────────────────────────────────────────────────
+_page_icons = {"Dashboard":"📊","Live Demo":"🚀","Record Outcome":"💰",
+               "Kill-Switch Alerts":"⚠️","Exec Report":"📝","Budget Guard":"💸",
+               "A/B Model Test":"🔬","Forecaster":"🔮","Prompt Library":"📚",
+               "Cost Optimizer":"⚙️","Health Score":"🏆","Team ROI":"👥"}
+_cur = st.session_state["active_page"]
+_ico = _page_icons.get(_cur, "")
+st.markdown(f'''
+<div style="background:{SURF};border-bottom:2px solid {GREEN};padding:14px 20px;
+     margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+  <span style="font-size:22px;">{_ico}</span>
+  <div>
+    <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:800;
+         color:{TEXT};line-height:1;">{_cur}</div>
+    <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};
+         letter-spacing:0.2em;text-transform:uppercase;margin-top:2px;">
+         ROI LENS — AI ACCOUNTABILITY LAYER</div>
+  </div>
+</div>''', unsafe_allow_html=True)
+
+if show_page("Dashboard"):
     dash = engine.get_dashboard()
     s    = dash["summary"]
 
@@ -306,7 +400,7 @@ with tab1:
                 header=dict(
                     values=["<b>Workflow</b>","<b>Calls</b>","<b>ROI</b>","<b>Cost</b>","<b>Value</b>","<b>Quality</b>"],
                     fill_color=SURF2,
-                    font=dict(color=MUTED2, size=10, family="Space Mono, monospace"),
+                    font=dict(color=MUTED2, size=10, family="DM Mono, monospace"),
                     align="left", line_color=BORDER, height=34,
                 ),
                 cells=dict(
@@ -330,7 +424,7 @@ with tab1:
                             [GREEN]  * n,   # Value
                             [BLUE]   * n,   # Quality
                         ],
-                        size=11, family="Space Mono, monospace"
+                        size=11, family="DM Mono, monospace"
                     ),
                     align="left", line_color=BORDER, height=30,
                 )
@@ -345,13 +439,13 @@ with tab1:
                 marker_color=[GREEN if r >= 0 else RED for r in df_wf["roi_pct"]],
                 text=df_wf["roi_pct"].apply(lambda x: f"{x:+.1f}%"),
                 textposition="outside",
-                textfont=dict(family="Space Mono", size=10, color=MUTED2)
+                textfont=dict(family="DM Mono", size=10, color=MUTED2)
             ))
             fig_bar.update_layout(**plot_layout(title_text="ROI % per Workflow", height=230,
                                                 showlegend=False, yaxis_title="ROI %"))
             st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
         else:
-            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:32px;text-align:center;border:1px dashed {BORDER}">No workflow data yet.</div>',
+            st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:32px;text-align:center;border:1px dashed {BORDER}">No workflow data yet.</div>',
                         unsafe_allow_html=True)
 
     with col_right:
@@ -374,13 +468,13 @@ with tab1:
             fig_m = go.Figure(go.Pie(
                 labels=df_m["model"], values=df_m["cost_usd"], hole=0.6,
                 marker=dict(colors=[GREEN, BLUE, WARN, RED]),
-                textfont=dict(family="Space Mono", size=9, color=TEXT),
+                textfont=dict(family="DM Mono", size=9, color=TEXT),
                 textinfo="percent",
             ))
             # NOTE: pass legend inline here — NOT via **PLOT to avoid duplicate key
             fig_m.update_layout(
                 paper_bgcolor=SURF, plot_bgcolor=SURF,
-                font=dict(family="Space Mono, monospace", color=MUTED2, size=10),
+                font=dict(family="DM Mono, monospace", color=MUTED2, size=10),
                 margin=dict(l=10, r=10, t=10, b=10),
                 height=210,
                 legend=dict(font=dict(size=9, color=MUTED2), bgcolor=SURF2, bordercolor=BORDER)
@@ -396,7 +490,7 @@ with tab1:
                 marker_color=GREEN, opacity=0.85,
                 text=df_ot["total_value_usd"].apply(lambda x: f"${x:.0f}"),
                 textposition="outside",
-                textfont=dict(family="Space Mono", size=10, color=TEXT)
+                textfont=dict(family="DM Mono", size=10, color=TEXT)
             ))
             fig_ot.update_layout(**plot_layout(title_text="Value by Outcome", height=200, showlegend=False))
             st.plotly_chart(fig_ot, use_container_width=True, config={"displayModeBar": False})
@@ -418,13 +512,13 @@ with tab1:
                    col_widths=[150,140,95,80,110,90],
                    col_colors=[TEXT, MUTED2, WARN, GREEN, MUTED2, MUTED2])
     else:
-        st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No calls yet. Use Live Demo tab.</div>',
+        st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No calls yet. Use Live Demo tab.</div>',
                     unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 2 — LIVE DEMO
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab2:
+if show_page("Live Demo"):
     st.markdown('<div class="panel-title">// Live Tracked Call — Mistral API Through ROI Lens</div>', unsafe_allow_html=True)
 
     WORKFLOWS = {
@@ -480,7 +574,7 @@ with tab2:
                         st.session_state["last_call_id"]   = res["call_id"]
                         st.session_state["last_call_cost"] = res["cost_usd"]
 
-                        st.markdown(f'<div style="color:{GREEN};font-family:Space Mono,monospace;font-size:10px;margin-bottom:8px;">✓ CALL TRACKED SUCCESSFULLY</div>',
+                        st.markdown(f'<div style="color:{GREEN};font-family:DM Mono,monospace;font-size:10px;margin-bottom:8px;">✓ CALL TRACKED SUCCESSFULLY</div>',
                                     unsafe_allow_html=True)
                         st.markdown(f'<div class="rbox">{res["content"]}</div>', unsafe_allow_html=True)
                         st.markdown(f"""
@@ -491,7 +585,7 @@ with tab2:
                           <span class="chip">{res['latency_ms']}ms</span>
                           <span class="chip">{model_d}</span>
                         </div>
-                        <div style="margin-top:10px;font-family:Space Mono,monospace;font-size:10px;color:{MUTED2};">
+                        <div style="margin-top:10px;font-family:DM Mono,monospace;font-size:10px;color:{MUTED2};">
                           → Copy the call ID → go to 💰 Record Outcome to close the ROI loop.
                         </div>""", unsafe_allow_html=True)
                     except Exception as e:
@@ -499,7 +593,7 @@ with tab2:
         else:
             st.markdown(f"""
             <div style="border:1px dashed {BORDER};padding:48px;text-align:center;margin-top:16px;">
-              <div style="font-family:Space Mono,monospace;font-size:11px;color:{MUTED};line-height:2.2;">
+              <div style="font-family:DM Mono,monospace;font-size:11px;color:{MUTED};line-height:2.2;">
                 Fill the form and click<br>
                 <span style="color:{GREEN};font-weight:700;font-size:13px;">▶ RUN TRACKED CALL</span><br><br>
                 Every call is auto-logged with<br>cost · tokens · latency · quality
@@ -509,7 +603,7 @@ with tab2:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 3 — RECORD OUTCOME
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab3:
+if show_page("Record Outcome"):
     st.markdown('<div class="panel-title">// Link a Business Outcome to an AI Call</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">After an AI call creates real business value — deal closed, fraud caught, ticket resolved — record it here to close the ROI loop.</div>',
                 unsafe_allow_html=True)
@@ -546,25 +640,25 @@ with tab3:
               <div class="panel-title">ROI Preview — Last Demo Call</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px;">
                 <div>
-                  <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">API Cost</div>
-                  <div style="font-family:Space Mono,monospace;font-size:22px;color:{WARN};font-weight:700;margin-top:4px;">${last_cost:.6f}</div>
+                  <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">API Cost</div>
+                  <div style="font-family:DM Mono,monospace;font-size:22px;color:{WARN};font-weight:700;margin-top:4px;">${last_cost:.6f}</div>
                 </div>
                 <div>
-                  <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Business Value</div>
-                  <div style="font-family:Space Mono,monospace;font-size:22px;color:{GREEN};font-weight:700;margin-top:4px;">${oval:.2f}</div>
+                  <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Business Value</div>
+                  <div style="font-family:DM Mono,monospace;font-size:22px;color:{GREEN};font-weight:700;margin-top:4px;">${oval:.2f}</div>
                 </div>
                 <div>
-                  <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Net Value</div>
-                  <div style="font-family:Space Mono,monospace;font-size:22px;color:{TEXT};font-weight:700;margin-top:4px;">${oval-last_cost:.2f}</div>
+                  <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Net Value</div>
+                  <div style="font-family:DM Mono,monospace;font-size:22px;color:{TEXT};font-weight:700;margin-top:4px;">${oval-last_cost:.2f}</div>
                 </div>
                 <div>
-                  <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">ROI</div>
-                  <div style="font-family:Space Mono,monospace;font-size:22px;color:{roi_c2};font-weight:700;margin-top:4px;">{roi_p:+.0f}%</div>
+                  <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">ROI</div>
+                  <div style="font-family:DM Mono,monospace;font-size:22px;color:{roi_c2};font-weight:700;margin-top:4px;">{roi_p:+.0f}%</div>
                 </div>
               </div>
             </div>""", unsafe_allow_html=True)
         else:
-            st.markdown(f'<div style="border:1px dashed {BORDER};padding:36px;text-align:center;font-family:Space Mono,monospace;font-size:11px;color:{MUTED};line-height:2;">Run a tracked call in<br><span style="color:{GREEN}">🚀 Live Demo</span> first,<br>then record its outcome here.</div>',
+            st.markdown(f'<div style="border:1px dashed {BORDER};padding:36px;text-align:center;font-family:DM Mono,monospace;font-size:11px;color:{MUTED};line-height:2;">Run a tracked call in<br><span style="color:{GREEN}">🚀 Live Demo</span> first,<br>then record its outcome here.</div>',
                         unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -580,15 +674,15 @@ with tab3:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 4 — KILL-SWITCH ALERTS
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab4:
+if show_page("Kill-Switch Alerts"):
     st.markdown('<div class="panel-title">// Kill-Switch Recommender</div>', unsafe_allow_html=True)
     alerts = engine.get_kill_switch_alerts()
 
     if not alerts:
-        st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-left:3px solid {GREEN};padding:16px;font-family:Space Mono,monospace;font-size:12px;color:{GREEN};">✓ All workflows are ROI positive — no alerts.</div>',
+        st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-left:3px solid {GREEN};padding:16px;font-family:DM Mono,monospace;font-size:12px;color:{GREEN};">✓ All workflows are ROI positive — no alerts.</div>',
                     unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="font-family:Space Mono,monospace;font-size:11px;color:{WARN};margin-bottom:16px;">⚠ {len(alerts)} workflow(s) flagged</div>',
+        st.markdown(f'<div style="font-family:DM Mono,monospace;font-size:11px;color:{WARN};margin-bottom:16px;">⚠ {len(alerts)} workflow(s) flagged</div>',
                     unsafe_allow_html=True)
         emojis = {"critical":"🔴","warning":"🟡","info":"🔵"}
         css_cls = {"critical":"ac","warning":"aw","info":"ai"}
@@ -598,16 +692,16 @@ with tab4:
             st.markdown(f"""
             <div class="{css_cls.get(sev,'aw')}">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-                <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:{TEXT};">
+                <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:{TEXT};">
                   {emojis.get(sev,'⚪')} {a['workflow_name']}
                 </div>
-                <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED2};letter-spacing:0.1em;text-align:right;">
+                <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED2};letter-spacing:0.1em;text-align:right;">
                   ROI: {a['roi_pct']:+.1f}% &nbsp;|&nbsp; Cost: ${a['total_cost_usd']:.4f}<br>
                   Value: ${a['total_value_usd']:.2f} &nbsp;|&nbsp; {a['call_count']} calls
                 </div>
               </div>
               <div style="font-size:12px;color:{MUTED2};margin-bottom:6px;">{a['reason']}</div>
-              <div style="font-family:Space Mono,monospace;font-size:11px;color:{GREEN};">→ {a['recommendation']}</div>
+              <div style="font-family:DM Mono,monospace;font-size:11px;color:{GREEN};">→ {a['recommendation']}</div>
             </div>""", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -626,7 +720,7 @@ with tab4:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 5 — EXEC REPORT
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab5:
+if show_page("Exec Report"):
     st.markdown('<div class="panel-title">// AI-Generated Executive ROI Report</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">Generates a plain-English CFO brief via Mistral AI — 3 paragraphs covering spend, ROI, wins, and one concrete recommendation. Requires API key.</div>',
                 unsafe_allow_html=True)
@@ -645,7 +739,7 @@ with tab5:
                     st.error(f"Error: {e}")
 
     if "exec_report" in st.session_state:
-        st.markdown(f'<div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};letter-spacing:0.15em;margin-bottom:10px;text-transform:uppercase;">Generated: {st.session_state.get("report_ts","")}</div>',
+        st.markdown(f'<div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};letter-spacing:0.15em;margin-bottom:10px;text-transform:uppercase;">Generated: {st.session_state.get("report_ts","")}</div>',
                     unsafe_allow_html=True)
         st.markdown(f'<div class="rpt">{st.session_state["exec_report"]}</div>', unsafe_allow_html=True)
 
@@ -663,7 +757,7 @@ with tab5:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 6 — BUDGET GUARDIAN
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab6:
+if show_page("Budget Guard"):
     st.markdown('<div class="panel-title">// Budget Guardian — Dynamic Per-Workflow Spend Limits</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">Set a real budget for each AI workflow. The system tracks burn rate in real time, alerts at your chosen threshold, and shows how many days until you run out — all from actual API call data.</div>', unsafe_allow_html=True)
 
@@ -686,14 +780,14 @@ with tab6:
                 result  = budget.set_budget(wf_id_b, budget_amt, period_days, float(alert_pct))
                 st.success(f"✓ Budget set: ${budget_amt:.3f} over {period_days} days for {sel_wf_budget}")
         else:
-            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:16px;border:1px dashed {BORDER}">Register workflows in the sidebar first.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:16px;border:1px dashed {BORDER}">Register workflows in the sidebar first.</div>', unsafe_allow_html=True)
 
     with col_b2:
         st.markdown('<div class="panel-title">// Live Budget Status</div>', unsafe_allow_html=True)
         all_budgets = budget.get_all_budgets()
 
         if not all_budgets:
-            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No budgets set yet.<br>Set one on the left to start tracking.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No budgets set yet.<br>Set one on the left to start tracking.</div>', unsafe_allow_html=True)
         else:
             SEV_COLOR = {"healthy": GREEN, "warning": WARN, "at_limit": RED, "over_budget": RED}
             SEV_ICON  = {"healthy": "✅", "warning": "⚠️", "at_limit": "🔴", "over_budget": "💀"}
@@ -708,26 +802,26 @@ with tab6:
                 st.markdown(f"""
                 <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {color};padding:14px 16px;margin-bottom:12px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:{TEXT};">{icon} {b_item['workflow_name']}</div>
-                    <div style="font-family:Space Mono,monospace;font-size:10px;color:{color};font-weight:700;">{b_item['pct_used']:.1f}% used</div>
+                    <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:{TEXT};">{icon} {b_item['workflow_name']}</div>
+                    <div style="font-family:DM Mono,monospace;font-size:10px;color:{color};font-weight:700;">{b_item['pct_used']:.1f}% used</div>
                   </div>
                   <div style="background:{BORDER};height:6px;margin-bottom:8px;">
                     <div style="width:{bar_w}%;height:100%;background:{bar_color};"></div>
                   </div>
                   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-                    <div style="font-family:Space Mono,monospace;">
+                    <div style="font-family:DM Mono,monospace;">
                       <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Budget</div>
                       <div style="font-size:13px;color:{TEXT};font-weight:700;">${b_item['budget_usd']:.3f}</div>
                     </div>
-                    <div style="font-family:Space Mono,monospace;">
+                    <div style="font-family:DM Mono,monospace;">
                       <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Spent</div>
                       <div style="font-size:13px;color:{WARN};font-weight:700;">${b_item['spent_usd']:.6f}</div>
                     </div>
-                    <div style="font-family:Space Mono,monospace;">
+                    <div style="font-family:DM Mono,monospace;">
                       <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Remaining</div>
                       <div style="font-size:13px;color:{GREEN};font-weight:700;">${b_item['remaining_usd']:.6f}</div>
                     </div>
-                    <div style="font-family:Space Mono,monospace;">
+                    <div style="font-family:DM Mono,monospace;">
                       <div style="font-size:8px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;">Days Left</div>
                       <div style="font-size:13px;color:{BLUE};font-weight:700;">{b_item['days_until_empty']:.0f}d</div>
                     </div>
@@ -737,7 +831,7 @@ with tab6:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 7 — A/B MODEL TESTER
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab7:
+if show_page("A/B Model Test"):
     st.markdown('<div class="panel-title">// A/B Model Tester — Compare Any 2 Mistral Models Live</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">Run the exact same prompt through 2 models simultaneously. Compare real cost, latency, and token usage side by side. Results saved to history. Use this to find the cheapest model that meets your quality bar.</div>', unsafe_allow_html=True)
 
@@ -786,11 +880,11 @@ with tab7:
                 m    = ab_r[key]
                 is_cheap = m["model"] == winner_cost
                 border_c = GREEN if is_cheap else BORDER
-                badge    = f'<span style="background:{GREEN};color:{BG};font-size:9px;padding:2px 6px;font-family:Space Mono,monospace;font-weight:700;margin-left:8px;">CHEAPER</span>' if is_cheap else ""
+                badge    = f'<span style="background:{GREEN};color:{BG};font-size:9px;padding:2px 6px;font-family:DM Mono,monospace;font-weight:700;margin-left:8px;">CHEAPER</span>' if is_cheap else ""
                 col.markdown(f"""
                 <div style="background:{SURF2};border:1px solid {border_c};padding:16px;">
-                  <div style="font-family:Space Mono,monospace;font-size:10px;font-weight:700;color:{TEXT};margin-bottom:12px;">{m['model']}{badge}</div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:Space Mono,monospace;">
+                  <div style="font-family:DM Mono,monospace;font-size:10px;font-weight:700;color:{TEXT};margin-bottom:12px;">{m['model']}{badge}</div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:DM Mono,monospace;">
                     <div><div style="font-size:8px;color:{MUTED};text-transform:uppercase;">Cost</div>
                          <div style="font-size:18px;color:{WARN};font-weight:700;">${m['cost_usd']:.6f}</div></div>
                     <div><div style="font-size:8px;color:{MUTED};text-transform:uppercase;">Latency</div>
@@ -805,7 +899,7 @@ with tab7:
             st.markdown(f"""
             <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);
                         border-left:3px solid {GREEN};padding:14px;margin-top:12px;
-                        font-family:Space Mono,monospace;font-size:11px;color:{TEXT};">
+                        font-family:DM Mono,monospace;font-size:11px;color:{TEXT};">
               <div style="color:{GREEN};font-weight:700;margin-bottom:4px;">SAVINGS: {ab_r['savings_pct']:.1f}% cheaper</div>
               {ab_r['recommendation']}
             </div>""", unsafe_allow_html=True)
@@ -833,13 +927,13 @@ with tab7:
             col_colors=[MUTED2, MUTED2, WARN, WARN, GREEN, GREEN, MUTED2]
         )
     else:
-        st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:16px;text-align:center;border:1px dashed {BORDER}">No tests yet. Run your first A/B test above.</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:16px;text-align:center;border:1px dashed {BORDER}">No tests yet. Run your first A/B test above.</div>', unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 8 — ROI FORECASTER + ANOMALY DETECTOR
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab8:
+if show_page("Forecaster"):
     st.markdown('<div class="panel-title">// ROI Forecaster & Anomaly Detector</div>', unsafe_allow_html=True)
 
     sub1, sub2 = st.tabs(["🔮  ROI Forecast", "🚨  Anomaly Detector"])
@@ -901,7 +995,7 @@ with tab8:
                     )
                     fig_fc.update_layout(
                         paper_bgcolor=SURF, plot_bgcolor=SURF,
-                        font=dict(family="Space Mono, monospace", color=MUTED2, size=10),
+                        font=dict(family="DM Mono, monospace", color=MUTED2, size=10),
                         margin=dict(l=44, r=44, t=36, b=44),
                         height=340,
                         xaxis=dict(gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
@@ -930,7 +1024,7 @@ with tab8:
             if bases:
                 for b in bases:
                     st.markdown(f"""
-                    <div style="background:{SURF2};border:1px solid {BORDER};padding:10px 12px;margin-bottom:8px;font-family:Space Mono,monospace;">
+                    <div style="background:{SURF2};border:1px solid {BORDER};padding:10px 12px;margin-bottom:8px;font-family:DM Mono,monospace;">
                       <div style="font-size:11px;font-weight:700;color:{TEXT};margin-bottom:6px;">{b['workflow_name']}</div>
                       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:9px;">
                         <div><div style="color:{MUTED};">AVG COST</div><div style="color:{WARN};">${b['avg_cost']:.6f}</div></div>
@@ -939,7 +1033,7 @@ with tab8:
                       </div>
                     </div>""", unsafe_allow_html=True)
             else:
-                st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:10px;">Need 5+ calls per workflow to build a baseline.</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:10px;">Need 5+ calls per workflow to build a baseline.</div>', unsafe_allow_html=True)
 
         with an2:
             st.markdown('<div class="panel-title">// Detected Anomalies (Last 72 Hours)</div>', unsafe_allow_html=True)
@@ -950,32 +1044,32 @@ with tab8:
                 found = st.session_state.get("anomaly_list", [])
 
                 if not found:
-                    st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-left:3px solid {GREEN};padding:14px;font-family:Space Mono,monospace;font-size:12px;color:{GREEN};">✓ No anomalies detected in the last 72 hours at σ={sigma}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);border-left:3px solid {GREEN};padding:14px;font-family:DM Mono,monospace;font-size:12px;color:{GREEN};">✓ No anomalies detected in the last 72 hours at σ={sigma}</div>', unsafe_allow_html=True)
                 else:
-                    st.markdown(f'<div style="font-family:Space Mono,monospace;font-size:11px;color:{WARN};margin-bottom:14px;">⚠ {len(found)} anomalous call(s) detected at σ={sigma}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="font-family:DM Mono,monospace;font-size:11px;color:{WARN};margin-bottom:14px;">⚠ {len(found)} anomalous call(s) detected at σ={sigma}</div>', unsafe_allow_html=True)
                     for a in found[:10]:
                         sev_c = RED if a["severity"] == "critical" else WARN
                         flags_html = "".join([
-                            f'<span style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:{RED};font-family:Space Mono,monospace;font-size:9px;padding:2px 8px;margin-right:6px;">{f["label"]}: {f["detail"]}</span>'
+                            f'<span style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:{RED};font-family:DM Mono,monospace;font-size:9px;padding:2px 8px;margin-right:6px;">{f["label"]}: {f["detail"]}</span>'
                             for f in a["flags"]
                         ])
                         st.markdown(f"""
                         <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {sev_c};padding:12px 14px;margin-bottom:10px;">
                           <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                            <div style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:{TEXT};">{a['workflow_name']}</div>
-                            <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED2};">{a['model']} · {a['created_at'][:16]}</div>
+                            <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:{TEXT};">{a['workflow_name']}</div>
+                            <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED2};">{a['model']} · {a['created_at'][:16]}</div>
                           </div>
                           <div style="margin-bottom:6px;">{flags_html}</div>
-                          <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};">call_id: {a['call_id'][:16]}...</div>
+                          <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};">call_id: {a['call_id'][:16]}...</div>
                         </div>""", unsafe_allow_html=True)
             else:
-                st.markdown(f'<div style="border:1px dashed {BORDER};padding:32px;text-align:center;font-family:Space Mono,monospace;font-size:11px;color:{MUTED};">Click <span style="color:{GREEN}">🚨 Detect Anomalies</span> to scan the last 72 hours.</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="border:1px dashed {BORDER};padding:32px;text-align:center;font-family:DM Mono,monospace;font-size:11px;color:{MUTED};">Click <span style="color:{GREEN}">🚨 Detect Anomalies</span> to scan the last 72 hours.</div>', unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 9 — SMART PROMPT LIBRARY
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab9:
+if show_page("Prompt Library"):
     st.markdown('<div class="panel-title">// Smart Prompt Library — Save & Rank Prompts by Real Performance</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">Save any prompt to the library. The system automatically tracks which saved prompts generate the highest quality scores and ROI over real usage. Ranking updates every time a prompt is used — no manual scoring needed.</div>', unsafe_allow_html=True)
 
@@ -1002,7 +1096,7 @@ with tab9:
                     st.error("Title and Prompt Text are required")
 
             if "pl_load_text" in st.session_state:
-                st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);padding:10px 12px;font-family:Space Mono,monospace;font-size:10px;color:{GREEN};margin-top:8px;">✓ Prompt saved and ready to track</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:{GREEN};margin-top:8px;">✓ Prompt saved and ready to track</div>', unsafe_allow_html=True)
         else:
             st.info("Register workflows first in the sidebar.")
 
@@ -1015,28 +1109,28 @@ with tab9:
         prompts = prompt_lib.get_ranked_prompts(wf_filter_id)
 
         if not prompts:
-            st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No prompts saved yet. Add your first prompt on the left.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:24px;text-align:center;border:1px dashed {BORDER}">No prompts saved yet. Add your first prompt on the left.</div>', unsafe_allow_html=True)
         else:
             for i, p in enumerate(prompts):
                 rank_c = GREEN if i == 0 else (BLUE if i == 1 else MUTED2)
                 qual_c = GREEN if p["avg_quality"] >= 0.8 else (WARN if p["avg_quality"] >= 0.6 else RED)
                 conf_badge = {"high": f"background:{GREEN};color:{BG}", "medium": f"background:{WARN};color:{BG}", "low": f"background:{MUTED};color:{TEXT}"}.get(p["confidence"], "")
-                tags_html = "".join([f'<span style="background:{SURF2};border:1px solid {BORDER};color:{MUTED2};font-size:9px;padding:1px 6px;margin-right:4px;font-family:Space Mono,monospace;">{t}</span>' for t in p["tags"][:4]])
+                tags_html = "".join([f'<span style="background:{SURF2};border:1px solid {BORDER};color:{MUTED2};font-size:9px;padding:1px 6px;margin-right:4px;font-family:DM Mono,monospace;">{t}</span>' for t in p["tags"][:4]])
 
                 st.markdown(f"""
                 <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {rank_c};padding:12px 14px;margin-bottom:10px;">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
                     <div>
-                      <span style="font-family:Space Mono,monospace;font-size:11px;font-weight:700;color:{rank_c};">#{i+1}</span>
-                      <span style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:{TEXT};margin-left:8px;">{p['title']}</span>
+                      <span style="font-family:DM Mono,monospace;font-size:11px;font-weight:700;color:{rank_c};">#{i+1}</span>
+                      <span style="font-family:Inter,sans-serif;font-size:13px;font-weight:700;color:{TEXT};margin-left:8px;">{p['title']}</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;">
-                      <span style="font-family:Space Mono,monospace;font-size:10px;color:{qual_c};">Q: {p['avg_quality']:.2f}</span>
-                      <span style="font-size:9px;padding:2px 6px;font-family:Space Mono,monospace;font-weight:700;{conf_badge}">{p['confidence'].upper()}</span>
+                      <span style="font-family:DM Mono,monospace;font-size:10px;color:{qual_c};">Q: {p['avg_quality']:.2f}</span>
+                      <span style="font-size:9px;padding:2px 6px;font-family:DM Mono,monospace;font-weight:700;{conf_badge}">{p['confidence'].upper()}</span>
                     </div>
                   </div>
-                  <div style="font-family:Space Mono,monospace;font-size:10px;color:{MUTED2};margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{p['prompt_text'][:120]}...</div>
-                  <div style="display:flex;gap:16px;font-family:Space Mono,monospace;font-size:9px;color:{MUTED};margin-bottom:6px;">
+                  <div style="font-family:DM Mono,monospace;font-size:10px;color:{MUTED2};margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{p['prompt_text'][:120]}...</div>
+                  <div style="display:flex;gap:16px;font-family:DM Mono,monospace;font-size:9px;color:{MUTED};margin-bottom:6px;">
                     <span>Uses: <span style="color:{TEXT}">{p['uses']}</span></span>
                     <span>ROI: <span style="color:{'#00e5a0' if p['roi_pct']>=0 else '#ff4d6d'}">{p['roi_pct']:+.0f}%</span></span>
                     <span>Value: <span style="color:{GREEN}">${p['total_value']:.2f}</span></span>
@@ -1049,7 +1143,7 @@ with tab9:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 10 — COST OPTIMIZER
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab10:
+if show_page("Cost Optimizer"):
     st.markdown('<div class="panel-title">// Cost Optimizer — Find the Cheapest Model That Still Meets Your Quality Bar</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">Analyzes your real quality scores per model per workflow. Recommends the cheapest model above your threshold. Shows projected annual savings based on actual call volumes. No guessing — pure data.</div>', unsafe_allow_html=True)
 
@@ -1074,7 +1168,7 @@ with tab10:
                 total_savings = sum(r["savings_annual"] for r in opt_results if r["can_optimize"])
                 if total_savings > 0:
                     st.markdown(f"""
-                    <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.3);padding:14px 18px;margin-bottom:16px;font-family:Space Mono,monospace;">
+                    <div style="background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.3);padding:14px 18px;margin-bottom:16px;font-family:DM Mono,monospace;">
                       <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;margin-bottom:4px;">Total Projected Annual Savings</div>
                       <div style="font-size:28px;font-weight:700;color:{GREEN};">${total_savings:,.2f}</div>
                       <div style="font-size:10px;color:{MUTED2};">by switching to optimal models across {len([r for r in opt_results if r['can_optimize']])} workflow(s)</div>
@@ -1083,12 +1177,12 @@ with tab10:
                 for r in opt_results:
                     can_opt   = r["can_optimize"]
                     border_c  = GREEN if can_opt else BORDER
-                    badge     = f'<span style="background:{GREEN};color:{BG};font-family:Space Mono,monospace;font-size:9px;font-weight:700;padding:2px 8px;">SAVE ${r["savings_annual"]:.2f}/yr</span>' if can_opt else f'<span style="background:{SURF2};color:{MUTED};font-family:Space Mono,monospace;font-size:9px;padding:2px 8px;">ALREADY OPTIMAL</span>'
+                    badge     = f'<span style="background:{GREEN};color:{BG};font-family:DM Mono,monospace;font-size:9px;font-weight:700;padding:2px 8px;">SAVE ${r["savings_annual"]:.2f}/yr</span>' if can_opt else f'<span style="background:{SURF2};color:{MUTED};font-family:DM Mono,monospace;font-size:9px;padding:2px 8px;">ALREADY OPTIMAL</span>'
 
                     with st.expander(f"{'⚡' if can_opt else '✅'} {r['workflow_name']} — {r['monthly_calls']} calls/mo"):
                         if can_opt:
                             st.markdown(f"""
-                            <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);padding:12px;margin-bottom:12px;font-family:Space Mono,monospace;">
+                            <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.2);padding:12px;margin-bottom:12px;font-family:DM Mono,monospace;">
                               <div style="font-size:9px;color:{MUTED};text-transform:uppercase;">Recommendation</div>
                               <div style="font-size:13px;color:{TEXT};margin-top:4px;">
                                 Switch from <span style="color:{WARN}">{r['current_model']}</span> → <span style="color:{GREEN}">{r['recommended_model']}</span>
@@ -1125,24 +1219,24 @@ with tab10:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 11 — WORKFLOW HEALTH SCORE
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab11:
+if show_page("Health Score"):
     st.markdown('<div class="panel-title">// Workflow Health Score — One Number That Tells You Everything</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">A single 0–100 score per workflow, like a credit score for AI. Combines ROI (30%), quality (25%), outcome coverage (20%), cost efficiency (15%), and call volume (10%). Grade A–D. Tells you exactly what to fix.</div>', unsafe_allow_html=True)
 
     all_scores = health.get_all_scores()
 
     if not all_scores:
-        st.markdown(f'<div style="color:{MUTED};font-family:Space Mono,monospace;font-size:11px;padding:32px;text-align:center;border:1px dashed {BORDER}">Make some tracked API calls first to generate health scores.</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color:{MUTED};font-family:DM Mono,monospace;font-size:11px;padding:32px;text-align:center;border:1px dashed {BORDER}">Make some tracked API calls first to generate health scores.</div>', unsafe_allow_html=True)
     else:
         # Leaderboard row
         cols_h = st.columns(min(len(all_scores), 5))
         for i, (col, s) in enumerate(zip(cols_h, all_scores[:5])):
             col.markdown(f"""
             <div style="background:{SURF2};border:1px solid {BORDER};border-top:2px solid {s['grade_color']};padding:16px;text-align:center;">
-              <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px;">{s['workflow_name'][:18]}</div>
-              <div style="font-size:36px;font-weight:800;color:{s['grade_color']};font-family:Syne,sans-serif;">{s['grade']}</div>
-              <div style="font-family:Space Mono,monospace;font-size:18px;font-weight:700;color:{TEXT};margin-top:2px;">{s['total_score']:.0f}</div>
-              <div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};margin-top:4px;">/ 100</div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px;">{s['workflow_name'][:18]}</div>
+              <div style="font-size:36px;font-weight:800;color:{s['grade_color']};font-family:Inter,sans-serif;">{s['grade']}</div>
+              <div style="font-family:DM Mono,monospace;font-size:18px;font-weight:700;color:{TEXT};margin-top:2px;">{s['total_score']:.0f}</div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};margin-top:4px;">/ 100</div>
             </div>""", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -1158,7 +1252,7 @@ with tab11:
                         bar_c = GREEN if comp["score"] >= 70 else (WARN if comp["score"] >= 40 else RED)
                         st.markdown(f"""
                         <div style="margin-bottom:10px;">
-                          <div style="display:flex;justify-content:space-between;font-family:Space Mono,monospace;font-size:10px;margin-bottom:3px;">
+                          <div style="display:flex;justify-content:space-between;font-family:DM Mono,monospace;font-size:10px;margin-bottom:3px;">
                             <span style="color:{MUTED2};">{comp['label']} <span style="color:{MUTED};font-size:9px;">({comp['weight']})</span></span>
                             <span style="color:{bar_c};font-weight:700;">{comp['score']:.0f} <span style="color:{MUTED};font-size:9px;">{comp['raw']}</span></span>
                           </div>
@@ -1170,7 +1264,7 @@ with tab11:
                 with dc2:
                     st.markdown('<div class="panel-title">// Key Metrics</div>', unsafe_allow_html=True)
                     st.markdown(f"""
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:Space Mono,monospace;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-family:DM Mono,monospace;">
                       <div style="background:{SURF};border:1px solid {BORDER};padding:12px;">
                         <div style="font-size:9px;color:{MUTED};text-transform:uppercase;letter-spacing:0.12em;">ROI</div>
                         <div style="font-size:18px;color:{'#00e5a0' if s['roi_pct']>=0 else '#ff4d6d'};font-weight:700;">{s['roi_pct']:+.1f}%</div>
@@ -1197,7 +1291,7 @@ with tab11:
                       </div>
                     </div>""", unsafe_allow_html=True)
                     st.markdown(f"""
-                    <div style="background:rgba(77,159,255,0.07);border-left:3px solid {BLUE};padding:10px 14px;margin-top:12px;font-family:Space Mono,monospace;font-size:11px;color:{TEXT};">
+                    <div style="background:rgba(77,159,255,0.07);border-left:3px solid {BLUE};padding:10px 14px;margin-top:12px;font-family:DM Mono,monospace;font-size:11px;color:{TEXT};">
                       → {s['top_recommendation']}
                     </div>""", unsafe_allow_html=True)
 
@@ -1243,7 +1337,7 @@ with tab11:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB 12 — TEAM ROI DASHBOARD
 # ═══════════════════════════════════════════════════════════════════════════════
-with tab12:
+if show_page("Team ROI"):
     st.markdown('<div class="panel-title">// Team ROI Dashboard — AI Spend & Value by Department</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="info-bar">Tag any workflow with a team name. See total ROI broken down by department. Identify which teams get most value from AI — and which are burning budget without results.</div>', unsafe_allow_html=True)
 
@@ -1292,7 +1386,7 @@ with tab12:
         team_data = team_roi.get_team_breakdown()
 
         if not team_data:
-            st.markdown(f'<div style="border:1px dashed {BORDER};padding:32px;text-align:center;font-family:Space Mono,monospace;font-size:11px;color:{MUTED};">Tag workflows to teams on the left.<br>Use <span style="color:{GREEN}">⚡ Auto-Tag</span> to see a demo instantly.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="border:1px dashed {BORDER};padding:32px;text-align:center;font-family:DM Mono,monospace;font-size:11px;color:{MUTED};">Tag workflows to teams on the left.<br>Use <span style="color:{GREEN}">⚡ Auto-Tag</span> to see a demo instantly.</div>', unsafe_allow_html=True)
         else:
             # Summary bar chart
             df_teams = pd.DataFrame(team_data)
@@ -1307,7 +1401,7 @@ with tab12:
             ))
             fig_teams.update_layout(
                 paper_bgcolor=SURF, plot_bgcolor=SURF,
-                font=dict(family="Space Mono, monospace", color=MUTED2, size=10),
+                font=dict(family="DM Mono, monospace", color=MUTED2, size=10),
                 margin=dict(l=44,r=16,t=36,b=44), barmode="group", height=240,
                 xaxis=dict(gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
                 yaxis=dict(gridcolor=BORDER, tickfont=dict(color=MUTED2, size=9)),
@@ -1325,17 +1419,17 @@ with tab12:
                 <div style="background:{SURF2};border:1px solid {BORDER};border-left:3px solid {roi_c_t};padding:14px 16px;margin-bottom:10px;">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
                     <div>
-                      <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:{TEXT};">👥 {t['team']}</div>
-                      {f'<div style="font-family:Space Mono,monospace;font-size:9px;color:{MUTED};">{t["department"]} {("· " + t["owner"]) if t["owner"] else ""}</div>' if t["department"] else ""}
+                      <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:{TEXT};">👥 {t['team']}</div>
+                      {f'<div style="font-family:DM Mono,monospace;font-size:9px;color:{MUTED};">{t["department"]} {("· " + t["owner"]) if t["owner"] else ""}</div>' if t["department"] else ""}
                     </div>
-                    <div style="font-family:Space Mono,monospace;font-size:22px;font-weight:700;color:{roi_c_t};">{t['roi_pct']:+.1f}%</div>
+                    <div style="font-family:DM Mono,monospace;font-size:22px;font-weight:700;color:{roi_c_t};">{t['roi_pct']:+.1f}%</div>
                   </div>
-                  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-family:Space Mono,monospace;font-size:9px;">
+                  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-family:DM Mono,monospace;font-size:9px;">
                     <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Workflows</div><div style="color:{TEXT};font-size:13px;font-weight:700;">{t['workflows']}</div></div>
                     <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Calls</div><div style="color:{TEXT};font-size:13px;font-weight:700;">{t['monthly_calls']}</div></div>
                     <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Cost</div><div style="color:{WARN};font-size:13px;font-weight:700;">${t['total_cost']:.4f}</div></div>
                     <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Value</div><div style="color:{GREEN};font-size:13px;font-weight:700;">${t['total_value']:.2f}</div></div>
                     <div><div style="color:{MUTED};text-transform:uppercase;letter-spacing:0.1em;">Quality</div><div style="color:{BLUE};font-size:13px;font-weight:700;">{t['avg_quality']:.2f}</div></div>
                   </div>
-                  {f'<div style="margin-top:8px;font-family:Space Mono,monospace;font-size:9px;display:flex;gap:16px;"><span style="color:{MUTED};">Best: <span style="color:{GREEN}">{best_wf["name"]} ({best_wf["roi"]:+.0f}%)</span></span><span style="color:{MUTED};">Worst: <span style="color:{RED}">{worst_wf["name"]} ({worst_wf["roi"]:+.0f}%)</span></span></div>' if best_wf and worst_wf else ""}
+                  {f'<div style="margin-top:8px;font-family:DM Mono,monospace;font-size:9px;display:flex;gap:16px;"><span style="color:{MUTED};">Best: <span style="color:{GREEN}">{best_wf["name"]} ({best_wf["roi"]:+.0f}%)</span></span><span style="color:{MUTED};">Worst: <span style="color:{RED}">{worst_wf["name"]} ({worst_wf["roi"]:+.0f}%)</span></span></div>' if best_wf and worst_wf else ""}
                 </div>""", unsafe_allow_html=True)
